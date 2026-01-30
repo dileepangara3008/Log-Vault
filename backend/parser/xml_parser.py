@@ -1,41 +1,45 @@
-import xml.etree.ElementTree as ET
+import json
 from datetime import datetime
+import io
 
-def parse_xml(path):
+def parse_json(file_stream):
     logs = []
 
-    tree = ET.parse(path)
-    root = tree.getroot()
+    # Read bytes first (safe)
+    try:
+        raw_bytes = file_stream.read()
+    except Exception:
+        return logs
 
-    # Expecting structure: <logs><log>...</log></logs>
-    for log_elem in root.findall("log"):
+    if not raw_bytes:
+        return logs
+
+    # Decode once
+    try:
+        text = raw_bytes.decode("utf-8", errors="ignore")
+        data = json.loads(text)
+    except Exception:
+        return logs
+
+    if not isinstance(data, list):
+        return logs
+
+    for entry in data:
         try:
-            # --- timestamp ---
-            ts_text = log_elem.findtext("timestamp")
-            if not ts_text:
+            timestamp_str = entry.get("timestamp")
+            if not timestamp_str:
                 continue
 
-            # ISO format: 2026-01-12T09:00:01
-            timestamp = datetime.fromisoformat(ts_text)
+            timestamp = datetime.fromisoformat(timestamp_str)
+            severity = entry.get("level", "INFO").upper()
+            service = entry.get("service", "unknown")
+            message = entry.get("message", "")
 
-            # --- severity ---
-            severity = log_elem.findtext("level", "INFO").upper()
-
-            # --- service ---
-            service = log_elem.findtext("service", "unknown")
-
-            # --- message ---
-            message = log_elem.findtext("message", "")
-
-            # --- append extra fields ---
             extra_fields = []
-
-            for child in log_elem:
-                tag = child.tag
-                text = (child.text or "").strip()
-
-                if tag not in ("timestamp", "level", "service", "message", "thread") and text:
-                    extra_fields.append(f"{tag}={text}")
+            for key, value in entry.items():
+                if key not in ("timestamp", "level", "service", "message", "thread"):
+                    if value is not None:
+                        extra_fields.append(f"{key}={value}")
 
             if extra_fields:
                 message = message + " | " + " ".join(extra_fields)
@@ -48,7 +52,6 @@ def parse_xml(path):
             })
 
         except Exception:
-            # Skip malformed log entries safely
             continue
 
     return logs
