@@ -84,7 +84,7 @@ def upload_file():
 
         # Save file
         save_path = os.path.join(UPLOAD_FOLDER, filename)
-        # file.save(save_path)
+        file.save(save_path)
 
         file_size = os.path.getsize(save_path)
 
