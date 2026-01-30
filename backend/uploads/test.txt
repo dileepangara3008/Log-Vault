@@ -1,0 +1,32 @@
+2025-10-26 09:12:11 INFO  auth_service      User login success | user_id=101 | ip=192.168.1.10
+2025-10-26 09:14:45 WARN  payment_service   Payment retry due to timeout | txn_id=TXN98231
+2025-10-27 10:05:33 ERROR db_service        Database connection failed | retry=1 | error=Connection refused
+2025-10-27 10:06:20 INFO  db_service        Database reconnected successfully
+2025-10-28 11:45:12 INFO  file_service      File uploaded | file=report.pdf | user_id=105
+2025-10-29 14:20:18 INFO  auth_service      Password changed | user_id=103
+2025-10-30 16:33:55 ERROR api_gateway       500 Internal Server Error | route=/api/orders | latency=1200ms
+2025-10-31 18:10:02 INFO  notification      Email sent | to=user105@gmail.com | status=SUCCESS
+2025-11-01 09:00:14 INFO  scheduler         Daily backup started
+2025-11-01 09:03:09 INFO  scheduler         Daily backup completed | duration=175s
+2025-11-02 12:22:40 WARN  auth_service      Invalid login attempt | username=unknown | ip=172.16.0.5
+2025-11-03 08:15:55 INFO  order_service     Order created | order_id=ORD5567 | user_id=102
+2025-11-04 13:30:18 INFO  inventory_service Stock updated | product_id=PRD889 | qty=+50
+2025-11-05 15:44:33 ERROR payment_service   Invalid card details | user_id=104 | txn_id=TXN98289
+2025-11-06 19:50:11 INFO  payment_service   Payment success | txn_id=TXN98301 | amount=2500 INR
+2025-11-07 07:12:47 INFO  auth_service      User logout | user_id=101
+2025-11-08 10:25:10 WARN  api_gateway       Slow response detected | route=/api/products | latency=980ms
+2025-11-09 11:45:01 INFO  user_service      Profile updated | user_id=102
+2025-11-10 16:15:59 ERROR inventory_service Stock mismatch detected | product_id=PRD220 | expected=20 | actual=18
+2025-11-11 09:20:45 INFO  scheduler         Weekly cleanup started
+2025-11-11 09:25:20 INFO  scheduler         Weekly cleanup completed | removed_logs=320
+2025-11-12 14:55:39 WARN  file_service      Large file upload | file=video.mp4 | size=120MB | user_id=109
+2025-11-13 18:30:10 INFO  notification      SMS sent | to=+91XXXXXXXXXX | status=SUCCESS
+2025-11-14 20:10:55 ERROR api_gateway       Unauthorized access | route=/admin/panel | ip=10.0.0.99
+2025-11-15 08:40:11 INFO  auth_service      Admin login success | admin_id=1 | ip=10.0.0.20
+2025-11-16 13:12:33 INFO  order_service     Order shipped | order_id=ORD5567 | courier=DTDC
+2025-11-17 17:55:22 WARN  order_service     Delivery delayed | order_id=ORD5567 | reason=Weather
+2025-11-18 09:45:12 INFO  order_service     Order delivered | order_id=ORD5567 | status=SUCCESS
+2025-11-19 11:15:55 ERROR db_service        Query failed | query=SELECT * FROM users | error=Timeout
+2025-11-20 12:22:18 INFO  db_service        Query executed successfully | rows=152
+2025-11-21 14:10:30 WARN  auth_service      Account locked due to multiple failures | user_id=110
+2025-11-22 15:40:59 INFO  auth_service      Account unlocked by admin | user_id=110

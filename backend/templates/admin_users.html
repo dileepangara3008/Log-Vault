@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Admin - Users{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_users.css') }}">
+
+<div class="admin-container">
+
+    <div class="admin-title">👑 Admin - User Management</div>
+
+    <div class="admin-card">
+
+        <div class="admin-topbar">
+            <a href="{{ url_for('admin.create_user') }}" class="btn-primary">➕ Create User</a>
+            <a href="{{ url_for('admin.admin_home') }}" class="btn-light">⬅ Home</a>
+        </div>
+
+        <table class="modern-table">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Active</th>
+                <th>Deleted</th>
+                <th>Created</th>
+                <th>Actions</th>
+                <th>Profile</th>
+            </tr>
+
+            {% for u in users %}
+            <tr>
+                <td>{{ u[0] }}</td>
+                <td><b>{{ u[1] }} {{ u[2] }}</b></td>
+                <td>{{ u[3] }}</td>
+                <td>{{ u[4] }}</td>
+
+                <!-- Active -->
+                <td>
+                    {% if u[5] %}
+                    <span class="badge badge-yes">YES</span>
+                    {% else %}
+                    <span class="badge badge-no">NO</span>
+                    {% endif %}
+                </td>
+
+                <!-- Deleted -->
+                <td>
+                    {% if u[6] %}
+                    <span class="badge badge-no">YES</span>
+                    {% else %}
+                    <span class="badge badge-yes">NO</span>
+                    {% endif %}
+                </td>
+
+                <td>{{ u[7] }}</td>
+
+                <!-- Actions -->
+                <td>
+                    <div class="action-row">
+
+                        {% if session.get("user_id") == u[0] %}
+                        <span style="color:gray; font-weight:600;">Not Allowed</span>
+
+                        {% else %}
+
+                        <!-- If user is deleted -> show Restore -->
+                        {% if u[6] %}
+                        <form method="POST" action="{{ url_for('admin.restore_user', user_id=u[0]) }}"
+                            onsubmit="return confirm('Restore this user?');">
+                            <button type="submit" class="action-btn restore-btn">
+                                ♻ Restore
+                            </button>
+                        </form>
+
+                        <!-- If user not deleted -> show Toggle + Delete -->
+                        {% else %}
+
+                        <a class="action-btn" href="{{ url_for('admin.toggle_active', user_id=u[0]) }}">
+                            🔁 Toggle Active
+                        </a>
+
+                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=u[0]) }}"
+                            onsubmit="return confirm('Delete this user?');">
+                            <button type="submit" class="action-btn danger">
+                                🗑 Delete
+                            </button>
+                        </form>
+
+                        {% endif %}
+                        {% endif %}
+
+                    </div>
+                </td>
+
+                <!-- Profile -->
+                <td>
+                    <a class="action-btn" href="{{ url_for('admin.admin_view_user_profile', user_id=u[0]) }}">
+                        👤 View Profile
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

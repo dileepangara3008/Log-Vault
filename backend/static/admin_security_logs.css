@@ -1,0 +1,91 @@
+.sec-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.sec-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #222;
+}
+
+.sec-subtitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 18px;
+}
+
+.sec-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Table */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.modern-table th {
+    text-align: left;
+    font-size: 13px;
+    padding: 12px;
+    color: #444;
+    background: #f6f7fb;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.modern-table td {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
+}
+
+.modern-table tr:hover {
+    background: #fafbff;
+}
+
+/* Back button */
+.back-links {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-light {
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: #f6f7fb;
+    color: #333;
+    font-weight: 800;
+    text-decoration: none;
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+.btn-light:hover {
+    background: #e9ecff;
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 950px) {
+    .modern-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

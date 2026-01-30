@@ -1,0 +1,114 @@
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.profile-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    color: #222;
+}
+
+.profile-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profile-subtitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 18px;
+}
+
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.info-table th {
+    text-align: left;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #444;
+    background: #f6f7fb;
+    width: 35%;
+}
+
+.info-table td {
+    padding: 12px;
+    font-size: 14px;
+    color: #333;
+    border-top: 1px solid #eee;
+    background: #fff;
+}
+
+.info-table tr:hover td {
+    background: #fafbff;
+}
+
+.badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-block;
+}
+
+.badge-yes {
+    background: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+}
+
+.badge-no {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
+}
+
+.profile-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    padding: 10px 16px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4f7cff, #6d4cff);
+    color: white;
+    font-weight: 800;
+    text-decoration: none;
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.btn-light {
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: #f6f7fb;
+    color: #333;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+.btn-light:hover {
+    background: #e9ecff;
+    transform: translateY(-1px);
+}

@@ -1,0 +1,42 @@
+2026-01-30 09:00:01 INFO  [SYSTEM] Application started successfully
+
+2026-01-30 09:02:15 INFO  [AUTH] User login successful | user_id=12 | username=dileep
+2026-01-30 09:02:16 INFO  [AUTH] Session created | session_id=8f3a9c2b
+
+2026-01-30 09:05:44 INFO  [ADMIN] ADMIN_EDIT_USER_PROFILE
+    table=users
+    target_user_id=18
+    changed_fields=first_name,last_name,phone_no,gender
+    performed_by=admin_user_id=1
+    ip_address=192.168.1.12
+
+2026-01-30 09:05:45 INFO  [ADMIN] Team updated
+    table=user_teams
+    user_id=18
+    old_team_id=2
+    new_team_id=4
+
+2026-01-30 09:10:03 WARN  [AUTH] Invalid login attempt
+    username=unknown_user
+    ip_address=192.168.1.20
+
+2026-01-30 09:15:27 INFO  [USER] Profile viewed
+    user_id=18
+    viewed_by=admin_user_id=1
+
+2026-01-30 09:20:10 ERROR [DB] Database connection failed
+    error=Timeout expired
+    retry_attempt=1
+
+2026-01-30 09:20:15 INFO  [DB] Database reconnected successfully
+
+2026-01-30 09:30:00 INFO  [SYSTEM] Daily audit job completed
+    records_processed=154
+    status=SUCCESS
+
+2026-01-30 09:45:55 INFO  [AUTH] User logout
+    user_id=12
+    session_id=8f3a9c2b
+
+2026-01-30 09:46:00 INFO  [SYSTEM] Application running normally
+

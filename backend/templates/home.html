@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}LogVault{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+<section id="hero" class="hero">
+    <div class="hero-text">
+        <h1>Centralized Log Management System</h1>
+        <p>
+            Upload logs from your applications, servers, and cloud services.
+            Our system cleans, organizes, and classifies logs automatically so your teams can search and analyze faster.
+        </p>
+
+        <div class="hero-buttons">
+            {% if session.get("user_id") %}
+            <a href="#features" class="btn-secondary">Explore Features</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">Get Started</a>
+            <a href="#features" class="btn-secondary">Explore Features</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="hero-card">
+        <h3> Quick Stats</h3>
+        <p>✔ Upload logs (TXT / CSV / JSON / XML)</p>
+        <p>✔ Auto Categorization</p>
+        <p>✔ Search + Filters</p>
+        <p>✔ Admin Dashboard + Audit</p>
+    </div>
+</section>
+
+<section id="features" class="section">
+    <h2> Features</h2>
+    <p>Everything you need for a mini SharePoint + Splunk hybrid</p>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3><i class="fa-solid fa-file"></i> Upload & Store Logs</h3>
+            <p>Users can upload files with metadata like environment, team, and format.</p>
+
+        </div>
+
+        <div class="feature-card">
+            <h3><i class="fa-solid fa-broom"></i> Cleaning & Parsing</h3>
+            <p>Removes junk lines, duplicates, and extracts structured fields automatically.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3> <b class="emoji">🏷</b> Categorization</h3>
+            <p>Classifies logs into Application, Security, Infrastructure, Audit, or Uncategorized.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3><i class="fa-solid fa-magnifying-glass"></i> Search & View</h3>
+            <p>Filter logs by severity, category, environment, date range, and keywords.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3><b class="emoji">📊</b> Dashboards</h3>
+            <p>Get summaries like total logs per day, top errors, and most active systems.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3><b class="emoji">🔐</b> Admin + Auditing</h3>
+            <p>Admins manage users and view audit actions for uploads, deletes, and views.</p>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="section">
+    <h2><i class="fa-solid fa-address-card"></i> About Us</h2>
+
+    <div class="about-box">
+        <h3>Built for Teams who want Clarity in Logs</h3>
+        <p>
+            LogVault is a simplified log management platform designed for learning and internal use.
+            It helps teams upload, store, clean, classify, and search logs in one centralized place.
+            Our focus is simplicity, speed, and a clean user experience.
+        </p>
+    </div>
+</section>
+
+{% endblock %}

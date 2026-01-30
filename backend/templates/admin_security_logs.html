@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Security Logs{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_security_logs.css') }}">
+
+<div class="sec-container">
+
+    <div class="sec-title">🔐 Security / Audit Logs</div>
+    <div class="sec-subtitle">Admin View — all user actions are recorded here</div>
+
+    <div class="sec-card">
+
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>Action ID</th>
+                    <th>User ID</th>
+                    <th>Action Type</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log[0] }}</td>
+                    <td>{{ log[1] }}</td>
+                    <td><b>{{ log[2] }}</b></td>
+                    <td>{{ log[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if logs|length == 0 %}
+        <p style="margin-top:12px; color:#777; font-weight:600;">
+            No audit logs found.
+        </p>
+        {% endif %}
+
+    </div>
+
+    <div class="back-links">
+        <a class="btn-light" href="{{ url_for('admin.admin_home') }}">⬅ Back to Admin Home</a>
+    </div>
+
+</div>
+
+{% endblock %}

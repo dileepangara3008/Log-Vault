@@ -1,0 +1,160 @@
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.admin-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    color: #222;
+}
+
+.admin-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.btn-primary {
+    padding: 10px 16px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4f7cff, #6d4cff);
+    color: white;
+    font-weight: 800;
+    text-decoration: none;
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.btn-light {
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: #f6f7fb;
+    color: #333;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+.btn-light:hover {
+    background: #e9ecff;
+    transform: translateY(-1px);
+}
+
+/* Table */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.modern-table th {
+    text-align: left;
+    font-size: 13px;
+    padding: 12px;
+    color: #444;
+    background: #f6f7fb;
+    font-weight: 800;
+}
+
+.modern-table td {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+}
+
+.modern-table tr:hover {
+    background: #fafbff;
+}
+
+/* Status badges */
+.badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-block;
+}
+
+.badge-yes {
+    background: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+}
+
+.badge-no {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
+}
+
+.action-btn.danger {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+}
+
+.action-btn.danger:hover {
+    background: #e63b3b;
+}
+
+
+
+/* Action buttons */
+.action-btn {
+    padding: 7px 10px;
+    border-radius: 12px;
+    background: #f6f7fb;
+    color: #333;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+.restore-btn {
+    background: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+}
+
+
+.action-btn:hover {
+    background: #e9ecff;
+    transform: translateY(-1px);
+}
+
+.action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 950px) {
+    .modern-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Search Logs{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='logs.css') }}">
+
+<!-- TOPBAR -->
+<form method="get">
+    <!-- FILTERS -->
+    <div class="filters-row">
+
+        <div class="filter-box">
+            <label>Severity</label>
+            <select name="severity">
+                <option value="">All</option>
+                {% for s in severities %}
+                <option value="{{ s }}" {% if request.args.get('severity')==s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-box">
+            <label>Category</label>
+            <select name="category">
+                <option value="">All</option>
+                {% for c in categories %}
+                <option value="{{ c }}" {% if request.args.get('category')==c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-box">
+            <label>Environment</label>
+            <select name="environment">
+                <option value="">All</option>
+                {% for e in environments %}
+                <option value="{{ e }}" {% if request.args.get('environment')==e %}selected{% endif %}>{{ e }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-box">
+            <label>Start Date</label>
+            <input type="date" name="start_date" value="{{ request.args.get('start_date','') }}">
+        </div>
+
+        <div class="filter-box">
+            <label>End Date</label>
+            <input type="date" name="end_date" value="{{ request.args.get('end_date','') }}">
+        </div>
+
+        {% if admin %}
+        <div class="filter-box">
+            <label>Team</label>
+            <select name="team_id">
+                <option value="">All Teams</option>
+                {% for t in all_teams %}
+                <option value="{{ t[0] }}" {% if selected_team_id and selected_team_id|int==t[0] %}selected{% endif %}>
+                    {{ t[1] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        {% if not admin %}
+        <div class="filter-box">
+            <label>Scope:</label>
+            <select name="scope">
+                <option value="TEAM" {% if scope=="TEAM" %}selected{% endif %}>My Team Logs</option>
+                <option value="MINE" {% if scope=="MINE" %}selected{% endif %}>My Logs Only</option>
+            </select>
+        </div>
+        {% endif %}
+
+
+    </div>
+
+    <div class="filter-actions">
+        <button type="submit" class="btn-primary">Apply</button>
+        <a href="{{ url_for('logs.view_logs') }}" class="btn-secondary">Reset</a>
+    </div>
+</form>
+
+<!-- TABLE -->
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th>TIME</th>
+                <th>SEVERITY</th>
+                <th>CATEGORY</th>
+                <th>ENV</th>
+                <th>MESSAGE</th>
+                <th>UPLOADED BY</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td style="white-space:nowrap;">{{ log[0] }}</td>
+
+                <td>
+                    {% set sev = log[1] %}
+                    <span class="badge
+                        {% if sev == 'ERROR' or sev == 'FATAL' %}b-error
+                        {% elif sev == 'WARN' %}b-warn
+                        {% elif sev == 'INFO' %}b-info
+                        {% else %}b-debug{% endif %}">
+                        {{ sev }}
+                    </span>
+                </td>
+
+                <td>{{ log[2] }}</td>
+                <td>{{ log[3] }}</td>
+                <td>{{ log[4] }}</td>
+                <td>{{ log[6] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <div class="table-footer">
+        <div class="rows-visible">
+            <select>
+                <option selected>20</option>
+            </select>
+            rows visible
+        </div>
+
+        <div class="pagination">
+            {% if page > 1 %}
+            <a class="btn btn-outline-primary" href="{{ url_for('logs.view_logs',
+                        page=page-1,
+                        q=keyword,
+                        severity=severity,
+                        category=category,
+                        environment=environment,
+                        start_date=start_date,
+                        end_date=end_date,
+                        team_id=selected_team_id,
+                        scope=scope
+                      ) }}">
+                ⬅ Prev
+            </a>
+            {% endif %}
+
+            <span style="padding:8px 14px; font-weight:700;">
+                Page {{ page }}
+            </span>
+
+            {% if logs|length == 20 %}
+            <a class="btn btn-outline-primary" href="{{ url_for('logs.view_logs',
+                        page=page+1,
+                        q=keyword,
+                        severity=severity,
+                        category=category,
+                        environment=environment,
+                        start_date=start_date,
+                        end_date=end_date,
+                        team_id=selected_team_id,
+                        scope=scope
+                      ) }}">
+                Next ➡
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}User Home{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='user_home.css') }}">
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <div>
+            <p>Welcome <b>{{ name }}</b>!</p>
+        </div>
+    </div>
+
+    <div class="cards-grid">
+
+        <!-- Upload -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-upload">📤</div>
+                <h3 class="card-title">Upload Files</h3>
+            </div>
+
+            <p class="card-desc">
+                Upload new log files and manage your uploaded files.
+            </p>
+
+            {% if "UPLOAD_LOG" in session.get("permissions", []) %}
+            <div class="card-actions">
+                <a class="btn-modern btn-primary" href="{{ url_for('upload.upload_file') }}">
+                    Upload File
+                </a>
+
+                <a class="btn-modern btn-danger" href="{{ url_for('files.list_files') }}">
+                    🗂 View / Delete Files
+                </a>
+            </div>
+            {% else %}
+            <div class="no-access">
+                ⚠️ You don’t have permission to upload logs.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Search -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-search">🔍</div>
+                <h3 class="card-title">Search Logs</h3>
+            </div>
+
+            <p class="card-desc">
+                Search logs by keyword, severity, category, environment and date range.
+            </p>
+
+            {% if "VIEW_LOG" in session.get("permissions", []) %}
+            <div class="card-actions">
+                <a class="btn-modern btn-success" href="{{ url_for('logs.view_logs') }}">
+                    Search Logs
+                </a>
+            </div>
+            {% else %}
+            <div class="no-access">
+                ⚠️ You don’t have permission to view logs.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Dashboard -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-dashboard">📊</div>
+                <h3 class="card-title">Dashboard</h3>
+            </div>
+
+            <p class="card-desc">
+                View summaries like total logs per day, top errors and most active systems.
+            </p>
+
+            {% if "VIEW_LOG" in session.get("permissions", []) %}
+            <div class="card-actions">
+                <a class="btn-modern btn-dark" href="{{ url_for('dashboard.dashboard') }}">
+                    View Dashboard
+                </a>
+            </div>
+            {% else %}
+            <div class="no-access">
+                ⚠️ You don’t have permission to view dashboard.
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

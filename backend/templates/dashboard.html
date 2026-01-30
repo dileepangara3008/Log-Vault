@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="dash-container">
+
+    <div class="dash-title">📊 Dashboard</div>
+
+    <!-- Filters -->
+    <form method="get" class="filter-bar">
+        <div class="filter-left">
+
+            <div class="filter-group">
+                <label>Range</label>
+                <select name="days">
+                    <option value="7" {% if days=="7" %}selected{% endif %}>Last 7 days</option>
+                    <option value="30" {% if days=="30" %}selected{% endif %}>Last 30 days</option>
+                    <option value="90" {% if days=="90" %}selected{% endif %}>Last 90 days</option>
+                </select>
+            </div>
+
+            {% if admin %}
+            <div class="filter-group">
+                <label>Team</label>
+                <select name="team_id">
+                    <option value="">All Teams</option>
+                    {% for t in all_teams %}
+                    <option value="{{ t[0] }}" {% if selected_team_id and selected_team_id|int==t[0] %}selected{% endif
+                        %}>
+                        {{ t[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <div class="filter-group">
+                <label>Scope</label>
+                <select name="scope">
+                    <option value="TEAM" {% if scope=="TEAM" %}selected{% endif %}>My Team Uploads</option>
+                    <option value="MINE" {% if scope=="MINE" %}selected{% endif %}>My Uploads Only</option>
+                </select>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <button type="submit" class="filter-btn">Apply</button>
+    </form>
+
+    <!-- Summary Cards -->
+    <div class="summary-row">
+
+        <div class="summary-card">
+            <div>
+                <h4>Total Files Uploaded</h4>
+                <p>{{ total_files }}</p>
+            </div>
+            <div class="summary-icon icon-blue">🗃️</div>
+        </div>
+
+        <div class="summary-card">
+            <div>
+                <h4>Archived Files</h4>
+                <p>{{ archived_files }}</p>
+            </div>
+            <div class="summary-icon icon-orange">🗄️</div>
+        </div>
+
+        <div class="summary-card">
+            <div>
+                <h4>Active Files</h4>
+                <p>{{ active_files }}</p>
+            </div>
+            <div class="summary-icon icon-active">📁</div>
+        </div>
+
+        <div class="summary-card">
+            <div>
+                <h4>Total Logs Parsed</h4>
+                <p>{{ total_logs }}</p>
+            </div>
+            <div class="summary-icon icon-logs">🔍</div>
+        </div>
+
+        <div class="summary-card">
+            <div>
+                <h4>Average Logs per File</h4>
+                <p>{{ avg_logs_per_file }}</p>
+            </div>
+            <div class="summary-icon icon-avg">📄</div>
+        </div>
+
+        <div class="summary-card">
+            <div>
+                <h4>Last Upload Time</h4>
+                <p style="font-size:14px; font-weight:700;">
+                    {% if last_upload_time %}
+                    {{ last_upload_time }}
+                    {% else %}
+                    No uploads yet
+                    {% endif %}
+                </p>
+            </div>
+            <div class="summary-icon icon-purple">⏱️</div>
+        </div>
+
+    </div>
+
+    {% if admin and show_team_chart %}
+    <div class="charts-row">
+
+        <!-- Doughnut Chart -->
+        <div class="chart-card dough">
+            <h3 class="chart-title">Files Uploaded by Each Team</h3>
+            <canvas id="filesDoughnutChart"></canvas>
+        </div>
+
+        <!-- Files Uploaded Per Day -->
+        <div class="chart-card line">
+            <h3 class="chart-title">📂 Files Uploaded Per Day</h3>
+
+            {% if files_per_day and files_per_day|length > 0 %}
+            <canvas id="filesPerDayChart"></canvas>
+            {% else %}
+            <p class="muted">No file uploads found for selected range.</p>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const labels = JSON.parse('{{ labels | tojson | safe }}');
+            const values = JSON.parse('{{ values | tojson | safe }}');
+
+            if (!labels.length) return;
+
+            const ctx = document
+                .getElementById("filesDoughnutChart")
+                .getContext("2d");
+
+            new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: labels.map((_, i) =>
+                            `hsl(${i * 55}, 70%, 60%)`
+                        )
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: "bottom" }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const rawData = JSON.parse('{{ files_per_day | tojson | safe }}');
+
+            const labels = rawData.map(row => {
+                const d = new Date(row[0]);
+                return d.toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                });
+            });
+            const values = rawData.map(row => row[1]);
+
+            const ctx = document
+                .getElementById("filesPerDayChart")
+                .getContext("2d");
+
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Files Uploaded",
+                        data: values,
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: "Date" }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: "Files Count" },
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- 1) Logs Per Day -->
+    <div class="card">
+        <div class="card-title">📅 Total Logs Per Day</div>
+
+        {% if logs_per_day and logs_per_day|length > 0 %}
+        <table class="modern-table">
+            <tr>
+                <th>Date</th>
+                <th>Total Logs</th>
+            </tr>
+            {% for row in logs_per_day %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="muted">No logs found for selected range.</p>
+        {% endif %}
+    </div>
+
+    <!-- 2) Severity Summary -->
+    <div class="card">
+        <div class="card-title">🚦 Severity Summary</div>
+
+        {% if severity_summary and severity_summary|length > 0 %}
+        <table class="modern-table">
+            <tr>
+                <th>Severity</th>
+                <th>Count</th>
+            </tr>
+            {% for row in severity_summary %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="muted">No severity data available.</p>
+        {% endif %}
+    </div>
+
+    <!-- 3) Top Error Types -->
+    <div class="card">
+        <div class="card-title">🔥 Top Error Types (ERROR / FATAL)</div>
+
+        {% if top_errors and top_errors|length > 0 %}
+        <table class="modern-table">
+            <tr>
+                <th>Error Message</th>
+                <th>Count</th>
+            </tr>
+            {% for row in top_errors %}
+            <tr>
+                <td style="max-width: 700px; white-space: pre-wrap;">{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="muted">No ERROR/FATAL logs found.</p>
+        {% endif %}
+    </div>
+
+    <!-- 4) Most Active Systems -->
+    <div class="card">
+        <div class="card-title">⚡ Most Active Systems</div>
+
+        {% if most_active_systems and most_active_systems|length > 0 %}
+        <table class="modern-table">
+            <tr>
+                <th>System</th>
+                <th>Total Logs</th>
+            </tr>
+            {% for row in most_active_systems %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="muted">No activity data found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Links -->
+    <div class="dash-links">
+        <a href="{{ url_for('auth.logout') }}">🚪 Logout</a>
+
+        {% if admin %}
+        <a href="{{ url_for('admin.admin_home') }}">⬅ Back to Admin Home</a>
+        {% else %}
+        <a href="{{ url_for('user_home.home') }}">⬅ Back to User Home</a>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

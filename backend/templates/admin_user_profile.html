@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_user_profile.css') }}">
+
+
+<div class="profile-container">
+
+    <div class="profile-title">👤 User Profile</div>
+    <div class="profile-subtitle">Admin View — you can view and edit this user details</div>
+
+    <div class="profile-card">
+
+        <table class="info-table">
+            <tr>
+                <th>User ID</th>
+                <td>{{ user[0] }}</td>
+            </tr>
+            <tr>
+                <th>First Name</th>
+                <td>{{ user[1] }}</td>
+            </tr>
+            <tr>
+                <th>Last Name</th>
+                <td>{{ user[2] }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ user[3] }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ user[4] }}</td>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <td>{{ user[5] }}</td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td>{{ user[6] }}</td>
+            </tr>
+            <tr>
+                <th>Active</th>
+                <td>
+                    {% if user[7] %}
+                    <span class="badge badge-yes">YES</span>
+                    {% else %}
+                    <span class="badge badge-no">NO</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Deleted</th>
+                <td>
+                    {% if user[8] %}
+                    <span class="badge badge-no">YES</span>
+                    {% else %}
+                    <span class="badge badge-yes">NO</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Created At</th>
+                <td>{{ user[9] }}</td>
+            </tr>
+        </table>
+
+        <div class="profile-actions">
+            <a class="btn-primary" href="{{ url_for('admin.admin_edit_user_profile', user_id=user[0]) }}">
+                ✏️ Edit This User
+            </a>
+
+            <a class="btn-light" href="{{ url_for('admin.list_users') }}">
+                ⬅ Back to Users
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

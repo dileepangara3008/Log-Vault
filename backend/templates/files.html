@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Files{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='files.css') }}">
+
+<div class="files-container">
+
+    <div class="files-title">🗂 Uploaded Files</div>
+
+    {% if admin %}
+    <div class="files-subtitle"> Admin View: You can delete any file.</div>
+    {% else %}
+    <div class="files-subtitle">👤 User View: You can delete only files uploaded by you.</div>
+    {% endif %}
+
+    <div class="files-card">
+
+        <table class="modern-table">
+            <tr>
+                <th>File ID</th>
+                <th>File Name</th>
+                <th>Team</th>
+                <th>Uploaded By</th>
+                <th>Size (bytes)</th>
+                <th>Uploaded At</th>
+                <th>Archived</th>
+                <th>Action</th>
+            </tr>
+
+            {% for f in files %}
+            <tr>
+                <td>{{ f[0] }}</td>
+                <td><b>{{ f[1] }}</b></td>
+                <td>{{ f[5] }}</td>
+                <td>{{ f[4] }}</td>
+                <td>{{ f[2] }}</td>
+                <td>{{ f[3] }}</td>
+
+                <td>
+                    {% if f[6] %}
+                    <span class="badge badge-yes">YES</span>
+                    {% else %}
+                    <span class="badge badge-no">NO</span>
+                    {% endif %}
+                </td>
+
+                <td style="display:flex; gap:10px;">
+
+                    <!-- Delete -->
+                    <form method="POST" action="{{ url_for('files.delete_file', file_id=f[0]) }}"
+                        onsubmit="return confirm('Are you sure you want to delete this file?');">
+                        <button type="submit" class="btn-danger btn-size">🗑 Delete</button>
+                    </form>
+
+                    <!-- Admin Archive / Restore -->
+                    {% if admin %}
+                    {% if not f[6] %}
+                    <!-- Archive -->
+                    <form method="POST" action="{{ url_for('files.archive_file', file_id=f[0]) }}"
+                        onsubmit="return confirm('Archive this file?');">
+                        <button type="submit" class="btn-danger btn-size">📦 Archive</button>
+                    </form>
+                    {% else %}
+                    <!-- Restore -->
+                    <form method="POST" action="{{ url_for('files.restore_file', file_id=f[0]) }}"
+                        onsubmit="return confirm('Restore this archived file?');">
+                        <button type="submit" class="btn-restore btn-size">♻️ Restore</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+
+                </td>
+
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+    <div class="back-links">
+        {% if admin %}
+        <a class="btn-light" href="{{ url_for('admin.admin_home') }}">⬅ Back to Admin Home</a>
+        {% else %}
+        <a class="btn-light" href="{{ url_for('user_home.home') }}">⬅ Back to User Home</a>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

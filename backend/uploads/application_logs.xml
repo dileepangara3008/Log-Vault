@@ -1,0 +1,49 @@
+<logs>
+    <log>
+        <timestamp>2026-01-12T09:00:01</timestamp>
+        <level>INFO</level>
+        <thread>main</thread>
+        <service>app.startup</service>
+        <message>Application starting</message>
+    </log>
+
+    <log>
+        <timestamp>2026-01-12T09:00:03</timestamp>
+        <level>INFO</level>
+        <thread>http-nio-8080-exec-1</thread>
+        <service>auth.login</service>
+        <message>Login attempt</message>
+        <user>dileep</user>
+        <ip>103.21.45.9</ip>
+    </log>
+
+    <log>
+        <timestamp>2026-01-12T09:05:14</timestamp>
+        <level>INFO</level>
+        <thread>http-nio-8080-exec-3</thread>
+        <service>api.request</service>
+        <message>GET /api/orders</message>
+        <user>dileep</user>
+        <latency_ms>124</latency_ms>
+        <status>200</status>
+    </log>
+
+    <log>
+        <timestamp>2026-01-12T09:10:42</timestamp>
+        <level>WARN</level>
+        <thread>http-nio-8080-exec-7</thread>
+        <service>payment.retry</service>
+        <message>Payment gateway timeout</message>
+        <order_id>ORD1023</order_id>
+    </log>
+
+    <log>
+        <timestamp>2026-01-12T09:15:09</timestamp>
+        <level>ERROR</level>
+        <thread>http-nio-8080-exec-4</thread>
+        <service>db.connection</service>
+        <message>Database connection failed</message>
+        <exception>SQLTimeoutException</exception>
+    </log>
+</logs>
+

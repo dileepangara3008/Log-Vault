@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='edit_profile.css') }}">
+
+
+<div class="edit-container">
+
+    <div class="edit-title">✏️ Edit Profile</div>
+
+    <div class="edit-card">
+
+        <form method="POST">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" value="{{ user[0] }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" value="{{ user[1] or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone_no" value="{{ user[2] }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email (Read-only)</label>
+                    <input type="email" value="{{ user[3] }}" readonly class="readonly">
+                </div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" value="{{ user[4] or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select name="gender" required>
+                        <option value="M" {% if user[5]=="M" %}selected{% endif %}>MALE</option>
+                        <option value="F" {% if user[5]=="F" %}selected{% endif %}>FEMALE</option>
+                        <option value="O" {% if user[5]=="O" %}selected{% endif %}>OTHER</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn-primary">💾 Save Changes</button>
+                <a href="{{ url_for('profile.view_profile') }}" class="btn-light">⬅ Cancel</a>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Edit User Profile{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_edit_user_profile.css') }}">
+
+<div class="edit-container">
+
+    <div class="edit-title">✏️ Edit User Profile</div>
+
+    <div class="edit-card">
+        <form method="POST">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" value="{{ user[1] }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" value="{{ user[2] or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone_no" value="{{ user[3] }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email (Read-only)</label>
+                    <input type="email" value="{{ user[4] }}" readonly class="readonly">
+                </div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" value="{{ user[5] or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select name="gender" required>
+                        <option value="M" {% if user[6]=="M" %}selected{% endif %}>MALE</option>
+                        <option value="F" {% if user[6]=="F" %}selected{% endif %}>FEMALE</option>
+                        <option value="O" {% if user[6]=="O" %}selected{% endif %}>OTHER</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Team</label>
+                    <select name="team_id" required>
+                        <option value="">Select Team</option>
+                        {% for team in teams %}
+                        <option value="{{ team[0] }}" {% if team1[1]==team[0] %} selected {% endif %}>
+                            {{ team[1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+            </div>
+
+
+            <div class="action-row">
+                <button type="submit" class="btn-primary">💾 Save Changes</button>
+                <a class="btn-light" href="{{ url_for('admin.admin_view_user_profile', user_id=user[0]) }}">
+                    ❌ Cancel
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Admin Home{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_home.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+<div class="page-wrap">
+
+    <!-- Header -->
+    <div class="page-header">
+        <p>Welcome <b>{{ name }}</b> <i class="fa-solid fa-user"></i></p>
+    </div>
+
+    <!-- Cards -->
+    <div class="cards-grid">
+
+        <!-- Upload Logs -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-upload">📤</div>
+                <h3 class="card-title">Upload Log File</h3>
+            </div>
+
+            <p class="card-desc">
+                Upload new log files and store them in the system with metadata.
+            </p>
+
+            <div class="card-actions">
+                {% if "UPLOAD_LOG" in session.get("permissions", []) %}
+                <a class="btn-modern btn-primary" href="{{ url_for('upload.upload_file') }}">
+                    Upload File
+                </a>
+                {% else %}
+                <div class="no-access">No permission to upload logs</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Search Logs -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-search">🔍</div>
+                <h3 class="card-title">Search Logs</h3>
+            </div>
+
+            <p class="card-desc">
+                Search logs by keyword, severity, category, environment, and date range.
+            </p>
+
+            <div class="card-actions">
+                {% if "VIEW_LOG" in session.get("permissions", []) %}
+                <a class="btn-modern btn-success" href="{{ url_for('logs.view_logs') }}">
+                    Search Logs
+                </a>
+                {% else %}
+                <div class="no-access">No permission to view logs</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-dashboard">📊</div>
+                <h3 class="card-title">Dashboard</h3>
+            </div>
+
+            <p class="card-desc">
+                View log summaries like daily counts, top errors, and active systems.
+            </p>
+
+            <div class="card-actions">
+                {% if "VIEW_LOG" in session.get("permissions", []) %}
+                <a class="btn-modern btn-dark" href="{{ url_for('dashboard.dashboard') }}">
+                    View Dashboard
+                </a>
+                {% else %}
+                <div class="no-access">No permission to access dashboard</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Manage Users -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-dashboard">👥</div>
+                <h3 class="card-title">Manage Users</h3>
+            </div>
+
+            <p class="card-desc">
+                Create users, toggle active status, restore deleted users, and manage profiles.
+            </p>
+
+            <div class="card-actions">
+                {% if "MANAGE_USERS" in session.get("permissions", []) %}
+                <a class="btn-modern btn-users" href="{{ url_for('admin.list_users') }}">
+                    User Management
+                </a>
+                {% else %}
+                <div class="no-access">No permission to manage users</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Manage Files -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-upload">🗂</div>
+                <h3 class="card-title">Manage Files</h3>
+            </div>
+
+            <p class="card-desc">
+                View all uploaded files, delete files, archive files, and restore archived files.
+            </p>
+
+            <div class="card-actions">
+                <a class="btn-modern btn-files" href="{{ url_for('files.list_files') }}">
+                    File Management
+                </a>
+            </div>
+        </div>
+
+        <!-- Audit Trail -->
+        <div class="card-box">
+            <div class="card-top">
+                <div class="card-icon icon-search">🔐</div>
+                <h3 class="card-title">Audit Trail</h3>
+            </div>
+
+            <p class="card-desc">
+                View security logs and audit actions like uploads, deletions, and login activity.
+            </p>
+
+            <div class="card-actions">
+                <a class="btn-modern btn-audit" href="{{ url_for('admin.view_security_logs') }}">
+                    View Audit Logs
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+[
+  {
+    "timestamp": "2026-01-12T09:00:01",
+    "level": "INFO",
+    "thread": "main",
+    "service": "app.startup",
+    "message": "Application starting"
+  },
+  {
+    "timestamp": "2026-01-12T09:00:03",
+    "level": "INFO",
+    "thread": "http-nio-8080-exec-1",
+    "service": "auth.login",
+    "message": "Login attempt",
+    "user": "dileep",
+    "ip": "103.21.45.9"
+  },
+  {
+    "timestamp": "2026-01-12T09:00:03",
+    "level": "INFO",
+    "thread": "http-nio-8080-exec-1",
+    "service": "auth.login",
+    "message": "Login success",
+    "user": "dileep",
+    "session_id": "ab12cd34"
+  },
+  {
+    "timestamp": "2026-01-12T09:05:14",
+    "level": "INFO",
+    "thread": "http-nio-8080-exec-3",
+    "service": "api.request",
+    "message": "GET /api/orders",
+    "user": "dileep",
+    "latency_ms": 124,
+    "status": 200
+  },
+  {
+    "timestamp": "2026-01-12T09:10:42",
+    "level": "WARN",
+    "thread": "http-nio-8080-exec-7",
+    "service": "payment.retry",
+    "message": "Payment gateway timeout",
+    "order_id": "ORD1023",
+    "retry": 1
+  },
+  {
+    "timestamp": "2026-01-12T09:10:45",
+    "level": "INFO",
+    "thread": "http-nio-8080-exec-7",
+    "service": "payment.process",
+    "message": "Payment successful",
+    "order_id": "ORD1023",
+    "amount": 1499,
+    "method": "CARD"
+  },
+  {
+    "timestamp": "2026-01-12T09:15:09",
+    "level": "ERROR",
+    "thread": "http-nio-8080-exec-4",
+    "service": "db.connection",
+    "message": "Database connection failed",
+    "exception": "SQLTimeoutException"
+  }
+]
+
