@@ -3,17 +3,131 @@
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
+
+<style>
+    /* ---------- Toast ---------- */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 14px 20px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        z-index: 9999;
+        display: none;
+        animation: fadeIn 0.4s ease;
+    }
+
+    .toast.success {
+        background-color: #2ecc71;
+    }
+
+    .toast.error {
+        background-color: #e74c3c;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ---------- Spinner ---------- */
+    #loader-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9998;
+    }
+
+    .loader-box {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .spinner {
+        width: 42px;
+        height: 42px;
+        border: 5px solid #ddd;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: auto;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
 <script>
-    function myFunction() {
-        alert("File uploaded and parsed successfully");
+    window.onload = function () {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("success") === "1") {
+            showToast("✅ File uploaded & parsed successfully!", "success");
+            setTimeout(() => {
+                window.location.href = "{{ url_for('dashboard.dashboard') }}";
+            }, 2000);
+        }
+
+        if (params.get("error") === "1") {
+            showToast("❌ Parsing failed. Please upload a valid log file.", "error");
+        }
+
+        // Clean URL
+        if (params.has("success") || params.has("error")) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    };
+
+    function showToast(message, type) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.className = "toast " + type;
+        toast.style.display = "block";
+
+        setTimeout(() => {
+            toast.style.display = "none";
+        }, 3000);
+    }
+
+    function showLoader() {
+        document.getElementById("loader-overlay").style.display = "flex";
     }
 </script>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Loader -->
+<div id="loader-overlay">
+    <div class="loader-box">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px;">Uploading & parsing logs…</p>
+    </div>
+</div>
+
 <div class="upload-container">
 
     <div class="upload-title">📤 Upload Log File</div>
 
     <div class="upload-card">
-        <form method="post" enctype="multipart/form-data" onsubmit="myFunction()">
+        <form method="post" enctype="multipart/form-data" onsubmit="showLoader()">
 
             <div class="form-grid">
 
@@ -51,5 +165,4 @@
     </div>
 
 </div>
-
 {% endblock %}

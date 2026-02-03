@@ -17,6 +17,7 @@ ALLOWED_EXTENSIONS = {
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @upload_bp.route("/upload", methods=["GET", "POST"])
 @require_permission("UPLOAD_LOG")
 def upload_file():
@@ -55,26 +56,26 @@ def upload_file():
         extension = filename.rsplit(".", 1)[1].lower()
         format_name = ALLOWED_EXTENSIONS[extension]
 
-        # get format_id
+        # format_id
         cur.execute(
             "SELECT format_id FROM file_formats WHERE format_name=%s",
             (format_name,)
         )
         format_id = cur.fetchone()[0]
 
-        # get team_id
+        # team_id
         cur.execute(
             "SELECT team_id FROM user_teams WHERE user_id=%s LIMIT 1",
             (user_id,)
         )
         team_id = cur.fetchone()[0]
 
-        # read file safely
+        # file size (memory-safe)
         file_bytes = file.read()
         file_size = len(file_bytes)
         file.seek(0)
 
-        # insert metadata
+        # insert raw_files
         cur.execute("""
             INSERT INTO raw_files
             (team_id, uploaded_by, original_name, file_size_bytes, format_id, environment_id)
@@ -93,12 +94,23 @@ def upload_file():
         log_audit("UPLOAD_FILE", "raw_files", file_id, f"Uploaded {filename}")
         conn.commit()
 
-        # 🔥 parse directly (NO subprocess, NO disk)
-        run_parser(file_id, file.stream)
+        try:
+            run_parser(file_id, file.stream)
+            success = "1"
+            error = None
+        except Exception as e:
+            conn.rollback()
+            success = None
+            error = "Parsing failed. Please check the log format."
 
         cur.close()
         conn.close()
-        return redirect(url_for("dashboard.dashboard"))
+
+        if success:
+            return redirect(url_for("upload.upload_file", success="1"))
+        else:
+            return redirect(url_for("upload.upload_file", error="1"))
+
 
     cur.close()
     conn.close()
