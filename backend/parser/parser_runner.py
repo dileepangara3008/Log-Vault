@@ -17,7 +17,7 @@ def run_parser(file_id, file_stream):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # 🔥 Read file ONCE
+    #  Read file ONCE
     raw_bytes = file_stream.read()
     if not raw_bytes:
         return
@@ -38,7 +38,7 @@ def run_parser(file_id, file_stream):
     if not parser:
         raise Exception(f"No parser for format {format_name}")
 
-    # 🔥 Pass fresh stream
+    #  Pass fresh stream
     parsed_logs = parser(BytesIO(raw_bytes))
 
     for log in parsed_logs:
