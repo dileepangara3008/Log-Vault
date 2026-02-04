@@ -3,10 +3,12 @@
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='admin_edit_user_profile.css') }}">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 <div class="edit-container">
 
-    <div class="edit-title">✏️ Edit User Profile</div>
+    <div class="edit-title"><i class="fa-regular fa-pen-to-square"></i> Edit User Profile</div>
 
     <div class="edit-card">
         <form method="POST">
@@ -63,9 +65,9 @@
 
 
             <div class="action-row">
-                <button type="submit" class="btn-primary">💾 Save Changes</button>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
                 <a class="btn-light" href="{{ url_for('admin.admin_view_user_profile', user_id=user[0]) }}">
-                    ❌ Cancel
+                    <i class="fa-regular fa-circle-xmark"></i> Cancel
                 </a>
             </div>
 
