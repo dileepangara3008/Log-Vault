@@ -14,18 +14,13 @@ GLOBAL_TXT_PATTERN = re.compile(
 def parse_text(file_stream):
     logs = []
     current_log = None
-
     for raw_line in file_stream:
-        # file_stream yields BYTES → decode
         line = raw_line.decode("utf-8", errors="ignore").rstrip()
 
         if not line.strip():
             continue
-
         m = GLOBAL_TXT_PATTERN.match(line)
-
         if m:
-            # save previous log
             if current_log:
                 logs.append(current_log)
 
@@ -45,7 +40,6 @@ def parse_text(file_stream):
                 "raw": line
             }
         else:
-            # continuation / stacktrace line
             if current_log:
                 current_log["message"] += "\n" + line
 

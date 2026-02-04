@@ -4,11 +4,13 @@ import io
 
 def parse_csv(file_stream):
     logs = []
-
-    # csv module expects text stream → wrap bytes stream
     text_stream = io.TextIOWrapper(file_stream, encoding="utf-8", errors="ignore")
-
     reader = csv.DictReader(text_stream)
+
+    if not reader.fieldnames:
+        return logs
+
+    reader.fieldnames = [h.lower() for h in reader.fieldnames]
 
     for row in reader:
         try:
@@ -16,20 +18,23 @@ def parse_csv(file_stream):
             if not ts:
                 continue
 
-            timestamp = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+            try:
+                timestamp = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S,%f")
+            except ValueError:
+                timestamp = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+
             severity = row.get("level", "INFO").upper()
             service = row.get("service", "unknown")
             message = row.get("message", "")
 
-            extra_fields = []
-            for key, value in row.items():
-                if key in ("timestamp", "level", "service", "message", "thread"):
-                    continue
-                if value and value.strip():
-                    extra_fields.append(f"{key}={value}")
+            extras = []
+            for k, v in row.items():
+                if k not in ("timestamp", "level", "service", "message", "thread"):
+                    if v:
+                        extras.append(f"{k}={v}")
 
-            if extra_fields:
-                message = message + " | " + " ".join(extra_fields)
+            if extras:
+                message += " | " + " ".join(extras)
 
             logs.append({
                 "timestamp": timestamp,
@@ -38,7 +43,8 @@ def parse_csv(file_stream):
                 "message": message
             })
 
-        except Exception:
-            continue
+        except Exception as e:
+            print("CSV error:", e)
 
     return logs
+
