@@ -126,7 +126,7 @@ def create_user():
 
         conn.commit()
 
-        log_audit("CREATE_USER", "users", new_user_id, f"Created user {email}")
+        log_audit(f"Created user {email}")
 
         cur.close()
         conn.close()
@@ -157,12 +157,26 @@ def toggle_active(user_id):
         WHERE user_id = %s
         RETURNING is_active
     """, (user_id,))
-    new_status = cur.fetchone()[0]
+    row = cur.fetchone()
+    if not row:
+        abort(404, "User not found")
+
+    new_status = row[0]
+
+    # Get target username
+    cur.execute(
+    "SELECT username FROM users WHERE user_id = %s",
+    (user_id,)
+)
+    username = cur.fetchone()[0]
+
+    # Audit message
+    if new_status:
+        log_audit(f"user {username} activated")
+    else:
+        log_audit(f"user {username} inactivated")
 
     conn.commit()
-
-    log_audit("TOGGLE_USER_ACTIVE", "users", user_id, f"is_active={new_status}")
-
     cur.close()
     conn.close()
     return redirect(url_for("admin.list_users"))
@@ -176,11 +190,16 @@ def view_security_logs():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT action_id, user_id, action_type, action_time
-        FROM audit_trail
-        ORDER BY action_time DESC
-        LIMIT 200
+            SELECT
+                a.action_id,
+                u.username,
+                a.action_type,
+                DATE(a.action_time)
+            FROM audit_trail a
+            JOIN users u ON u.user_id = a.user_id
+            ORDER BY a.action_time DESC
     """)
+
     logs = cur.fetchall()
 
     cur.close()
@@ -260,9 +279,6 @@ def admin_edit_user_profile(user_id):
         conn.commit()
 
         log_audit(
-            "ADMIN_EDIT_USER_PROFILE",
-            "users",
-            user_id,
             f"Admin updated user_id={user_id}"
         )
 
@@ -332,7 +348,7 @@ def delete_user(user_id):
     """, (user_id,))
     conn.commit()
 
-    log_audit("DELETE_USER", "users", user_id, "Soft deleted user")
+    log_audit(f"deleted user of user id {user_id}")
 
     cur.close()
     conn.close()
@@ -357,7 +373,7 @@ def restore_user(user_id):
     """, (user_id,))
     conn.commit()
 
-    log_audit("RESTORE_USER", "users", user_id, "Restored user")
+    log_audit(f"Restored user of user id {user_id}")
 
     cur.close()
     conn.close()

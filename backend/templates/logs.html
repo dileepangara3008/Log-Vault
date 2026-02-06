@@ -8,8 +8,12 @@
 <form method="get">
     <!-- FILTERS -->
     <div class="filters-row">
+        <div class="filter-box row-1">
+            <label>Keyword</label>
+            <input type="text" name="q" placeholder="Search logs..." value="{{ request.args.get('q', '') }}">
+        </div>
 
-        <div class="filter-box">
+        <div class="filter-box row-1">
             <label>Severity</label>
             <select name="severity">
                 <option value="">All</option>
@@ -19,7 +23,7 @@
             </select>
         </div>
 
-        <div class="filter-box">
+        <div class="filter-box row-1">
             <label>Category</label>
             <select name="category">
                 <option value="">All</option>
@@ -29,7 +33,7 @@
             </select>
         </div>
 
-        <div class="filter-box">
+        <div class="filter-box row-2">
             <label>Environment</label>
             <select name="environment">
                 <option value="">All</option>
@@ -39,18 +43,18 @@
             </select>
         </div>
 
-        <div class="filter-box">
+        <div class="filter-box row-2">
             <label>Start Date</label>
             <input type="date" name="start_date" value="{{ request.args.get('start_date','') }}">
         </div>
 
-        <div class="filter-box">
+        <div class="filter-box row-2">
             <label>End Date</label>
             <input type="date" name="end_date" value="{{ request.args.get('end_date','') }}">
         </div>
 
         {% if admin %}
-        <div class="filter-box">
+        <div class="filter-box row-2">
             <label>Team</label>
             <select name="team_id">
                 <option value="">All Teams</option>
@@ -63,7 +67,7 @@
         </div>
         {% endif %}
         {% if not admin %}
-        <div class="filter-box">
+        <div class="filter-box row-2">
             <label>Scope:</label>
             <select name="scope">
                 <option value="TEAM" {% if scope=="TEAM" %}selected{% endif %}>My Team Logs</option>

@@ -42,66 +42,67 @@ def upload_file():
     environments = cur.fetchall()
 
     if request.method == "POST":
-        file = request.files.get("file")
+        files = request.files.getlist("files")
         environment_id = request.form.get("environment_id")
 
         if not environment_id:
             abort(400, "Environment is required")
-        if not file or file.filename == "":
-            abort(400, "No file selected")
-        if not allowed_file(file.filename):
-            abort(400, "Unsupported file type")
+        
+        for file in files:
+            if not file or file.filename == "":
+                abort(400, "No file selected")
+            if not allowed_file(file.filename):
+                abort(400, "Unsupported file type")
+            filename = secure_filename(file.filename)
+            extension = filename.rsplit(".", 1)[1].lower()
+            format_name = ALLOWED_EXTENSIONS[extension]
 
-        filename = secure_filename(file.filename)
-        extension = filename.rsplit(".", 1)[1].lower()
-        format_name = ALLOWED_EXTENSIONS[extension]
-
-        # format_id
-        cur.execute(
+            # format_id
+            cur.execute(
             "SELECT format_id FROM file_formats WHERE format_name=%s",
             (format_name,)
-        )
-        format_id = cur.fetchone()[0]
+            )
+            format_id = cur.fetchone()[0]
 
-        # team_id
-        cur.execute(
+            # team_id
+            cur.execute(
             "SELECT team_id FROM user_teams WHERE user_id=%s LIMIT 1",
             (user_id,)
-        )
-        team_id = cur.fetchone()[0]
+            )
+            team_id = cur.fetchone()[0]
 
-        # file size (memory-safe)
-        file_bytes = file.read()
-        file_size = len(file_bytes)
-        file.seek(0)
+            # file size (memory-safe)
+            file_bytes = file.read()
+            file_size = len(file_bytes)
+            file.seek(0)
 
-        # insert raw_files
-        cur.execute("""
+            # insert raw_files
+            cur.execute("""
             INSERT INTO raw_files
             (team_id, uploaded_by, original_name, file_size_bytes, format_id, environment_id)
             VALUES (%s,%s,%s,%s,%s,%s)
             RETURNING file_id
-        """, (
-            team_id,
-            user_id,
-            filename,
-            file_size,
-            format_id,
-            environment_id
-        ))
+            """, (
+                team_id,
+                user_id,
+                filename,
+                file_size,
+                format_id,
+                environment_id
+            ))
 
-        file_id = cur.fetchone()[0]
-        log_audit("UPLOAD_FILE", "raw_files", file_id, f"Uploaded {filename}")
-        conn.commit()
-
-        try:
-            run_parser(file_id, file.stream)
-            success = "1"
-            error = None
-        except Exception as e:
-            conn.rollback()
-            success = None
-            error = "Parsing failed. Please check the log format."
+            file_id = cur.fetchone()[0]
+            log_audit("UPLOAD_FILE", "raw_files", file_id, f"Uploaded {filename}")
+            conn.commit()
+            print("gd")
+            try:
+                run_parser(file_id, file.stream)
+                success = "1"
+                error = None
+            except Exception as e:
+                conn.rollback()
+                success = None
+                error = "Parsing failed. Please check the log format."
 
         cur.close()
         conn.close()

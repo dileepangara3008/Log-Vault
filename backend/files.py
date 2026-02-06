@@ -98,7 +98,7 @@ def delete_file(file_id):
     cur.execute("DELETE FROM raw_files WHERE file_id=%s", (file_id,))
     conn.commit()
 
-    log_audit("DELETE_FILE", "raw_files", file_id, f"Deleted file {filename}")
+    log_audit(f"Deleted file {filename}")
 
     cur.close()
     conn.close()
@@ -164,7 +164,7 @@ def archive_file(file_id):
 
     conn.commit()
 
-    log_audit("ARCHIVE_FILE", "raw_files", file_id, f"Archived file {filename}")
+    log_audit(f"Archived file {filename}")
 
     cur.close()
     conn.close()
@@ -213,7 +213,7 @@ def restore_file(file_id):
 
     conn.commit()
 
-    log_audit("RESTORE_FILE", "raw_files", file_id, f"Restored file {filename}")
+    log_audit(f"Restored file {filename}")
 
     cur.close()
     conn.close()
