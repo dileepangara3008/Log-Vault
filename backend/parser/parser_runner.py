@@ -22,7 +22,15 @@ def run_parser(file_id, file_stream):
     conn = get_db_connection()
     cur = conn.cursor()
 
+<<<<<<< HEAD
     # Get format
+=======
+    #  Read file ONCE
+    raw_bytes = file_stream.read()
+    if not raw_bytes:
+        return
+
+>>>>>>> origin/main
     cur.execute("""
         SELECT ff.format_name
         FROM raw_files rf
@@ -39,10 +47,14 @@ def run_parser(file_id, file_stream):
     if not parser:
         raise Exception(f"No parser for format {format_name}")
 
+<<<<<<< HEAD
     # ✅ DEBUG (this WILL print)
     print("Bytes received by parser:", len(raw_bytes))
 
     # 🔥 Always give parser a fresh stream
+=======
+    #  Pass fresh stream
+>>>>>>> origin/main
     parsed_logs = parser(BytesIO(raw_bytes))
 
     for log in parsed_logs:
