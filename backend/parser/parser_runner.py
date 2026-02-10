@@ -13,95 +13,82 @@ PARSERS = {
     "XML": parse_xml
 }
 
-def run_parser(file_id, file_stream):
-    # 🔥 Read stream ONCE
+def run_parser(file_id, file_stream, format_name):
     raw_bytes = file_stream.read()
     if not raw_bytes:
         raise Exception("Parser received empty file stream")
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-<<<<<<< HEAD
-    # Get format
-=======
-    #  Read file ONCE
-    raw_bytes = file_stream.read()
-    if not raw_bytes:
-        return
-
->>>>>>> origin/main
-    cur.execute("""
-        SELECT ff.format_name
-        FROM raw_files rf
-        JOIN file_formats ff ON rf.format_id = ff.format_id
-        WHERE rf.file_id = %s AND rf.is_archived = FALSE
-    """, (file_id,))
-
-    row = cur.fetchone()
-    if not row:
-        raise Exception("File format not found")
-
-    format_name = row[0]
     parser = PARSERS.get(format_name)
     if not parser:
         raise Exception(f"No parser for format {format_name}")
 
-<<<<<<< HEAD
-    # ✅ DEBUG (this WILL print)
-    print("Bytes received by parser:", len(raw_bytes))
+    parsed_logs, raw_total, skipped_by_parser = parser(BytesIO(raw_bytes))
 
-    # 🔥 Always give parser a fresh stream
-=======
-    #  Pass fresh stream
->>>>>>> origin/main
-    parsed_logs = parser(BytesIO(raw_bytes))
+    total_logs = raw_total
+    skipped_logs = skipped_by_parser
+    inserted_logs = 0
+
+    if total_logs == 0:
+        return total_logs, inserted_logs, skipped_logs
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    #  PRELOAD SEVERITIES (ONE DB HIT)
+    cur.execute("SELECT severity_code, severity_id FROM log_severities")
+    severity_map = {k.upper(): v for k, v in cur.fetchall()}
+    default_severity_id = severity_map.get("INFO")
+
+    #  PRELOAD CATEGORIES (ONE DB HIT)
+    cur.execute("SELECT category_name, category_id FROM log_categories")
+    category_map = {k: v for k, v in cur.fetchall()}
+    default_category_id = category_map.get("UNCATEGORIZED")
 
     for log in parsed_logs:
-        severity = log["severity"].upper()
+        try:
+            timestamp = log.get("timestamp")
+            severity  = log.get("severity")
+            message   = log.get("message")
 
-        # Severity
-        cur.execute(
-            "SELECT severity_id FROM log_severities WHERE severity_code=%s",
-            (severity,)
-        )
-        row = cur.fetchone()
-        if row:
-            severity_id = row[0]
-        else:
-            cur.execute(
-                "SELECT severity_id FROM log_severities WHERE severity_code='INFO'"
-            )
-            severity_id = cur.fetchone()[0]
+            # ---- Validation ----
+            if not timestamp or not message or not message.strip():
+                skipped_logs += 1
+                continue
 
-        # Category
-        category = detect_category(log["message"])
-        cur.execute(
-            "SELECT category_id FROM log_categories WHERE category_name=%s",
-            (category,)
-        )
-        row = cur.fetchone()
-        if row:
-            category_id = row[0]
-        else:
-            cur.execute(
-                "SELECT category_id FROM log_categories WHERE category_name='GENERAL'"
-            )
-            category_id = cur.fetchone()[0]
 
-        # Insert log entry
-        cur.execute("""
-            INSERT INTO log_entries
-            (file_id, log_timestamp, severity_id, category_id, message_line)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (
-            file_id,
-            log.get("timestamp"),
-            severity_id,
-            category_id,
-            log.get("message")
-        ))
+            severity = (severity or "INFO").upper()
+            severity_id = severity_map.get(severity, default_severity_id)
+
+            # ---- Category detection (no DB hit) ----
+            try:
+                category = detect_category(message)
+            except Exception:
+                category = "UNCATEGORIZED"
+
+            category_id = category_map.get(category, default_category_id)
+
+            # ---- Insert log ----
+            cur.execute("""
+                INSERT INTO log_entries
+                (file_id, log_timestamp, severity_id, category_id, message_line)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT DO NOTHING
+            """, (
+                file_id,
+                timestamp,
+                severity_id,
+                category_id,
+                message
+            ))
+
+            if cur.rowcount > 0:
+                inserted_logs += 1
+
+        except Exception:
+            continue
 
     conn.commit()
     cur.close()
     conn.close()
+
+    return total_logs, inserted_logs, skipped_logs

@@ -131,6 +131,11 @@
     background-color: #e74c3c;
 }
 
+.toast.warning {
+    background-color: #f0ad4e;
+    color: #000;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

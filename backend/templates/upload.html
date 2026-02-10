@@ -7,19 +7,50 @@
     window.onload = function () {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.get("success") === "1") {
-            showToast("✅ File uploaded & parsed successfully!", "success");
+        const parsed = params.get("parsed");
+        const duplicates = params.get("duplicates");
+        const failed = params.get("failed");
+
+        // ✅ NEW
+        const totalLogs = params.get("total_logs");
+        const insertedLogs = params.get("inserted_logs");
+        const parsedPct = params.get("parsed_pct");
+
+        let shouldRedirect = false;
+
+        if (parsed) {
+            let msg = "✅ Parsed successfully: " + parsed.split(",").join(", ");
+
+            // ✅ Append stats to toast
+            if (totalLogs !== null) {
+                msg += ` | Logs: ${insertedLogs}/${totalLogs} (${parsedPct}%)`;
+            }
+
+            showToast(msg, "success");
+            shouldRedirect = true;
+        }
+
+        if (duplicates) {
+            showToast(
+                "⚠️ Duplicate files skipped: " + duplicates.split(",").join(", "),
+                "warning"
+            );
+        }
+
+        if (failed) {
+            showToast(
+                "❌ Failed to parse: " + failed.split(",").join(", "),
+                "error"
+            );
+        }
+
+        if (shouldRedirect) {
             setTimeout(() => {
                 window.location.href = "{{ url_for('dashboard.dashboard') }}";
-            }, 2000);
+            }, 2500);
         }
 
-        if (params.get("error") === "1") {
-            showToast("❌ Parsing failed. Please upload a valid log file.", "error");
-        }
-
-        // Clean URL
-        if (params.has("success") || params.has("error")) {
+        if (parsed || duplicates || failed || totalLogs) {
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     };
@@ -39,6 +70,8 @@
         document.getElementById("loader-overlay").style.display = "flex";
     }
 </script>
+
+
 
 <!-- Toast -->
 <div id="toast" class="toast"></div>

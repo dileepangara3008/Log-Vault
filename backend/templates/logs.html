@@ -45,12 +45,12 @@
 
         <div class="filter-box row-2">
             <label>Start Date</label>
-            <input type="date" name="start_date" value="{{ request.args.get('start_date','') }}">
+            <input type="date" name="start_date" value="{{start_date}}">
         </div>
 
         <div class="filter-box row-2">
             <label>End Date</label>
-            <input type="date" name="end_date" value="{{ request.args.get('end_date','') }}">
+            <input type="date" name="end_date" value="{{end_date}}">
         </div>
 
         {% if admin %}

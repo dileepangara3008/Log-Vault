@@ -1,50 +1,91 @@
 import csv
-from datetime import datetime
 import io
+from datetime import datetime
+from parser.time_parser import parse_timestamp
+
+
+TIMESTAMP_COLS = ["timestamp", "time", "datetime"]
+SEVERITY_COLS  = ["severity", "level"]
+MESSAGE_COLS   = ["message", "line", "content", "note"]
+
+
+def get_value(row, keys, default=None):
+    for k in keys:
+        if k in row and row[k]:
+            return row[k]
+    return default
+
 
 def parse_csv(file_stream):
     logs = []
-    text_stream = io.TextIOWrapper(file_stream, encoding="utf-8", errors="ignore")
-    reader = csv.DictReader(text_stream)
+    raw_count = 0
+    skipped_count = 0
 
-    if not reader.fieldnames:
-        return logs
+    text = io.TextIOWrapper(file_stream, encoding="utf-8", errors="ignore")
 
-    reader.fieldnames = [h.lower() for h in reader.fieldnames]
+    first_line = text.readline()
+    text.seek(0)
 
-    for row in reader:
-        try:
-            ts = row.get("timestamp")
-            if not ts:
+    has_header = any(col in first_line.lower() for col in TIMESTAMP_COLS)
+
+    # -------- CSV WITH HEADER --------
+    if has_header:
+        reader = csv.DictReader(text)
+        reader.fieldnames = [h.lower().strip() for h in reader.fieldnames]
+
+        for row in reader:
+            raw_count += 1
+
+            ts_raw = get_value(row, TIMESTAMP_COLS)
+            if not ts_raw:
+                skipped_count += 1
                 continue
 
-            try:
-                timestamp = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S,%f")
-            except ValueError:
-                timestamp = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+            timestamp = parse_timestamp(ts_raw)
+            if not timestamp:
+                skipped_count += 1
+                continue
 
-            severity = row.get("level", "INFO").upper()
-            service = row.get("service", "unknown")
-            message = row.get("message", "")
+            severity = get_value(row, SEVERITY_COLS, "INFO").upper()
+            message  = get_value(row, MESSAGE_COLS, "")
 
-            extras = []
+            if message is None:
+                skipped_count += 1
+                continue
+
             for k, v in row.items():
-                if k not in ("timestamp", "level", "service", "message", "thread"):
-                    if v:
-                        extras.append(f"{k}={v}")
-
-            if extras:
-                message += " | " + " ".join(extras)
+                if k not in TIMESTAMP_COLS + SEVERITY_COLS + MESSAGE_COLS and v:
+                    message += f" | {k}={v}"
 
             logs.append({
                 "timestamp": timestamp,
                 "severity": severity,
-                "service": service,
                 "message": message
             })
 
-        except Exception as e:
-            print("CSV error:", e)
+    # -------- CSV WITHOUT HEADER --------
+    else:
+        reader = csv.reader(text)
 
-    return logs
+        for row in reader:
+            raw_count += 1
 
+            if len(row) < 2:
+                skipped_count += 1
+                continue
+
+            timestamp = parse_timestamp(row[0])
+            if not timestamp:
+                skipped_count += 1
+                continue
+
+            severity = row[1].strip().upper() if row[1] else "INFO"
+            message  = " | ".join(col.strip() for col in row[2:] if col)
+
+            logs.append({
+                "timestamp": timestamp,
+                "severity": severity,
+                "message": message
+            })
+
+    return logs, raw_count, skipped_count

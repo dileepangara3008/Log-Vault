@@ -31,7 +31,7 @@ def list_files():
 
     if admin:
         cur.execute("""
-            SELECT rf.file_id, rf.original_name, rf.file_size_bytes, rf.uploaded_at,
+            SELECT rf.file_id, rf.original_name, rf.file_size_bytes, to_char(rf.uploaded_at,'YYYY-MM-DD HH24:MI:SS'),
                    u.email, t.team_name, rf.is_archived
             FROM raw_files rf
             JOIN users u ON rf.uploaded_by = u.user_id
@@ -40,7 +40,7 @@ def list_files():
         """)
     else:
         cur.execute("""
-            SELECT rf.file_id, rf.original_name, rf.file_size_bytes, rf.uploaded_at,
+            SELECT rf.file_id, rf.original_name, rf.file_size_bytes, to_char(rf.uploaded_at,'YYYY-MM-DD HH24:MI:SS'),
                    u.email, t.team_name, rf.is_archived
             FROM raw_files rf
             JOIN users u ON rf.uploaded_by = u.user_id

@@ -1,53 +1,88 @@
-import xml.etree.ElementTree as ET
 from datetime import datetime
+import xml.etree.ElementTree as ET
+
+TIMESTAMP_KEYS = {"timestamp", "time", "datetime", "logtime"}
+SEVERITY_KEYS  = {"severity", "level", "loglevel"}
+MESSAGE_KEYS   = {"message", "msg", "line", "content", "note"}
+
+
+def parse_timestamp(value):
+    try:
+        return datetime.fromisoformat(value.strip())
+    except Exception:
+        return None
+
+
+def normalize_key(key):
+    return "".join(c.lower() for c in key if c.isalnum())
+
 
 def parse_xml(file_stream):
     logs = []
+    raw_count = 0
+    skipped_count = 0
 
     try:
-        raw_bytes = file_stream.read()
+        raw = file_stream.read()
     except Exception:
-        return logs
+        return logs, raw_count, skipped_count
 
-    if not raw_bytes:
-        return logs
+    if not raw:
+        return logs, raw_count, skipped_count
 
     try:
-        root = ET.fromstring(raw_bytes)
+        root = ET.fromstring(raw)
     except Exception:
-        return logs
+        return logs, raw_count, skipped_count
 
-    # Expecting structure: <logs><log>...</log></logs>
-    for log_elem in root.findall("log"):
+    for log_elem in root.findall(".//log"):
+        raw_count += 1
+
         try:
-            ts_text = log_elem.findtext("timestamp")
-            if not ts_text:
+            timestamp = None
+            severity = "INFO"
+            message = ""
+
+            # ---- First pass: core fields ----
+            for child in log_elem:
+                key = normalize_key(child.tag)
+                value = (child.text or "").strip()
+
+                if not value:
+                    continue
+
+                if key in TIMESTAMP_KEYS and not timestamp:
+                    timestamp = parse_timestamp(value)
+
+                elif key in SEVERITY_KEYS:
+                    severity = value.upper()
+
+                elif key in MESSAGE_KEYS and not message:
+                    message = value
+
+            if not timestamp:
+                skipped_count += 1
                 continue
 
-            timestamp = datetime.fromisoformat(ts_text)
-            severity = log_elem.findtext("level", "INFO").upper()
-            service = log_elem.findtext("service", "unknown")
-            message = log_elem.findtext("message", "")
-
-            extra_fields = []
+            # ---- Second pass: append extras ----
             for child in log_elem:
-                tag = child.tag
-                text = (child.text or "").strip()
+                key = normalize_key(child.tag)
+                value = (child.text or "").strip()
 
-                if tag not in ("timestamp", "level", "service", "message", "thread") and text:
-                    extra_fields.append(f"{tag}={text}")
+                if not value:
+                    continue
 
-            if extra_fields:
-                message = message + " | " + " ".join(extra_fields)
+                if key not in (TIMESTAMP_KEYS | SEVERITY_KEYS | MESSAGE_KEYS):
+                    message += f" | {child.tag}={value}"
 
             logs.append({
                 "timestamp": timestamp,
                 "severity": severity,
-                "service": service,
                 "message": message
             })
 
         except Exception:
+            skipped_count += 1
             continue
 
-    return logs
+    return logs, raw_count, skipped_count

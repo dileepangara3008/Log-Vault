@@ -24,7 +24,7 @@ def view_profile():
     team_name=cur.fetchone()[0]
 
     cur.execute("""
-        SELECT user_id, first_name, last_name, phone_no, email, username, gender, created_at
+        SELECT user_id, first_name, last_name, phone_no, email, username, gender, to_char(created_at,'YYYY-MM-DD HH24:MI:SS')
         FROM users
         WHERE user_id = %s
     """, (user_id,))
@@ -65,7 +65,7 @@ def edit_profile():
 
         conn.commit()
 
-        log_audit("UPDATE_PROFILE", "users", user_id, "User updated profile")
+        log_audit("User updated profile")
 
         cur.close()
         conn.close()

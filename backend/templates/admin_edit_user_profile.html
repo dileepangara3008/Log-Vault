@@ -17,17 +17,17 @@
 
                 <div class="form-group">
                     <label>First Name</label>
-                    <input type="text" name="first_name" value="{{ user[1] }}" required>
+                    <input type="text" name="first_name" value="{{ user[1] }}" readonly class="readonly">
                 </div>
 
                 <div class="form-group">
                     <label>Last Name</label>
-                    <input type="text" name="last_name" value="{{ user[2] or '' }}">
+                    <input type="text" name="last_name" value="{{ user[2] or '' }}" readonly class="readonly">
                 </div>
 
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="text" name="phone_no" value="{{ user[3] }}" required>
+                    <input type="text" name="phone_no" value="{{ user[3] }}" readonly class="readonly">
                 </div>
 
                 <div class="form-group">
@@ -37,12 +37,12 @@
 
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" name="username" value="{{ user[5] or '' }}">
+                    <input type="text" name="username" value="{{ user[5] or '' }}" readonly class="readonly">
                 </div>
 
                 <div class="form-group">
                     <label>Gender</label>
-                    <select name="gender" required>
+                    <select name="gender" readonly class="readonly">
                         <option value="M" {% if user[6]=="M" %}selected{% endif %}>MALE</option>
                         <option value="F" {% if user[6]=="F" %}selected{% endif %}>FEMALE</option>
                         <option value="O" {% if user[6]=="O" %}selected{% endif %}>OTHER</option>

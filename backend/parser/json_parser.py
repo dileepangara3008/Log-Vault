@@ -1,50 +1,74 @@
 import json
-from datetime import datetime
 import io
+from datetime import datetime
+from parser.time_parser import parse_timestamp
+
+def normalize_key(key):
+    return "".join(c.lower() for c in key if c.isalnum())
+
+
+TIMESTAMP_KEYS = {"timestamp", "time", "datetime", "logtime"}
+SEVERITY_KEYS  = {"severity", "level", "loglevel"}
+MESSAGE_KEYS   = {"message", "msg", "line", "content", "note"}
+
+
+def get_normalized(entry, key_set, default=None):
+    for k, v in entry.items():
+        if normalize_key(k) in key_set and v:
+            return v
+    return default
+
 
 def parse_json(file_stream):
     logs = []
+    raw_count = 0
+    skipped_count = 0
 
-    # Wrap bytes stream → text stream for json
-    text_stream = io.TextIOWrapper(file_stream, encoding="utf-8", errors="ignore")
+    text_stream = io.TextIOWrapper(
+        file_stream, encoding="utf-8", errors="ignore"
+    )
 
     try:
         data = json.load(text_stream)
     except Exception:
-        return logs
+        return logs, raw_count, skipped_count
 
-    # Expecting a list of log objects
     if not isinstance(data, list):
-        return logs
+        return logs, raw_count, skipped_count
 
     for entry in data:
-        try:
-            timestamp_str = entry.get("timestamp")
-            if not timestamp_str:
-                continue
+        raw_count += 1
 
-            timestamp = datetime.fromisoformat(timestamp_str)
-            severity = entry.get("level", "INFO").upper()
-            service = entry.get("service", "unknown")
-            message = entry.get("message", "")
-
-            extra_fields = []
-            for key, value in entry.items():
-                if key not in ("timestamp", "level", "service", "message", "thread"):
-                    if value is not None:
-                        extra_fields.append(f"{key}={value}")
-
-            if extra_fields:
-                message = message + " | " + " ".join(extra_fields)
-
-            logs.append({
-                "timestamp": timestamp,
-                "severity": severity,
-                "service": service,
-                "message": message
-            })
-
-        except Exception:
+        if not isinstance(entry, dict):
+            skipped_count += 1
             continue
 
-    return logs
+        ts_raw = get_normalized(entry, TIMESTAMP_KEYS)
+        if not ts_raw:
+            skipped_count += 1
+            continue
+
+        timestamp = parse_timestamp(ts_raw)
+        if not timestamp:
+            skipped_count += 1
+            continue
+
+        severity = get_normalized(entry, SEVERITY_KEYS, "INFO").upper()
+        message  = get_normalized(entry, MESSAGE_KEYS, "")
+
+        if message is None:
+            skipped_count += 1
+            continue
+
+        for k, v in entry.items():
+            if normalize_key(k) not in (TIMESTAMP_KEYS | SEVERITY_KEYS | MESSAGE_KEYS) and v is not None:
+                message += f" | {k}={v}"
+
+        logs.append({
+            "timestamp": timestamp,
+            "severity": severity,
+            "message": message
+        })
+
+    return logs, raw_count, skipped_count
+

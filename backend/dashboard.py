@@ -132,15 +132,19 @@ def dashboard():
     # 4) Most active systems (approx)
     # -------------------------
     cur.execute(f"""
-        SELECT SUBSTRING(le.message_line FROM 1 FOR 40) AS system_key,
-               COUNT(*) AS total_logs
+        SELECT
+            lc.category_name AS system,
+            COUNT(*) AS total_logs
         FROM log_entries le
-        JOIN raw_files rf ON le.file_id = rf.file_id
-        {where_sql} AND rf.is_archived=FALSE
-        GROUP BY system_key
+        JOIN log_categories lc ON le.category_id = lc.category_id
+        JOIN raw_files rf ON le.file_id = rf.file_id   -- ✅ REQUIRED
+        {where_sql} AND rf.is_archived = FALSE
+        GROUP BY lc.category_name
         ORDER BY total_logs DESC
         LIMIT 5
     """, params)
+
+
     most_active_systems = cur.fetchall()
 
     # -------------------------
@@ -208,14 +212,31 @@ def dashboard():
         """, file_params)
     avg_logs_per_file = cur.fetchone()[0]
 
+    cur.execute(f"""
+        SELECT
+            CONCAT(u.first_name, ' ', u.last_name) AS name,
+            t.team_name,
+            COUNT(*) AS upload_count
+        FROM users u
+        JOIN raw_files rf
+            ON u.user_id = rf.uploaded_by
+        JOIN teams t
+            ON t.team_id = rf.team_id
+        {file_where_sql}
+        GROUP BY u.user_id, u.first_name, u.last_name, t.team_name
+        ORDER BY upload_count DESC
+        LIMIT 3
+    """, file_params)
+
+    top_users = cur.fetchall()
+
 
     cur.execute(f"""
-        SELECT MAX(rf.uploaded_at)
+        SELECT MAX(to_char(rf.uploaded_at,'YYYY-MM-DD HH24:MI:SS'))
         FROM raw_files rf
         {file_where_sql}
         """, file_params)
     last_upload_time = cur.fetchone()[0]
-
 
     labels = []
     values = []
@@ -276,6 +297,7 @@ def dashboard():
         labels=labels,
         values=values,
         show_team_chart=show_team_chart,
-        files_per_day=files_per_day
+        files_per_day=files_per_day,
+        top_users = top_users
     )
 

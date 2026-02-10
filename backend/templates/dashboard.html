@@ -6,7 +6,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="dash-container">
 
-    <div class="dash-title">📊 Dashboard</div>
+    <div class="dash-title">📊 Analytics</div>
 
     <!-- Filters -->
     <form method="get" class="filter-bar">
@@ -214,6 +214,26 @@
             });
         });
     </script>
+
+    {% if admin %}
+    <div class="card">
+        <div class="card-title">Active users</div>
+        <table class="modern-table">
+            <tr>
+                <th>Active users</th>
+                <th>Team</th>
+                <th>Files Uploaded</th>
+            </tr>
+            {% for user in top_users %}
+            <tr>
+                <td>{{user[0]}}</td>
+                <td>{{user[1]}}</td>
+                <td>{{user[2]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
 
     <!-- 1) Logs Per Day -->
     <div class="card">

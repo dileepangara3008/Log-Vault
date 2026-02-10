@@ -64,7 +64,7 @@
         <div class="card-box">
             <div class="card-top">
                 <div class="card-icon icon-dashboard"><i class="fa-solid fa-chart-area"></i></div>
-                <h3 class="card-title">Dashboard</h3>
+                <h3 class="card-title">Analytics</h3>
             </div>
 
             <p class="card-desc">
@@ -74,7 +74,7 @@
             <div class="card-actions">
                 {% if "VIEW_LOG" in session.get("permissions", []) %}
                 <a class="btn-modern btn-dark" href="{{ url_for('dashboard.dashboard') }}">
-                    View Dashboard
+                    View Analytics
                 </a>
                 {% else %}
                 <div class="no-access">No permission to access dashboard</div>

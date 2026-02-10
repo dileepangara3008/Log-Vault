@@ -62,7 +62,7 @@ def list_users():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT user_id, first_name, last_name, email, username, is_active, is_deleted, created_at
+        SELECT user_id, first_name, last_name, email, username, is_active, is_deleted, to_char(created_at,'YYYY-MM-DD HH24:MI:SS')
         FROM users
         ORDER BY created_at DESC
     """)
@@ -194,10 +194,11 @@ def view_security_logs():
                 a.action_id,
                 u.username,
                 a.action_type,
-                DATE(a.action_time)
+                to_char(a.action_time, 'YYYY-MM-DD HH24:MI:SS') AS formatted_time
             FROM audit_trail a
             JOIN users u ON u.user_id = a.user_id
-            ORDER BY a.action_time DESC
+            ORDER BY a.action_time DESC;
+
     """)
 
     logs = cur.fetchall()
@@ -216,7 +217,7 @@ def admin_view_user_profile(user_id):
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT user_id, first_name, last_name, phone_no, email, username, gender, is_active, is_deleted, created_at
+        SELECT user_id, first_name, last_name, phone_no, email, username, gender, is_active, is_deleted, to_char(created_at ,'YYYY-MM-DD HH24:MI:SS')
         FROM users
         WHERE user_id = %s
     """, (user_id,))

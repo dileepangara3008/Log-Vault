@@ -70,7 +70,7 @@
         <div class="card-box">
             <div class="card-top">
                 <div class="card-icon icon-dashboard">📊</div>
-                <h3 class="card-title">Dashboard</h3>
+                <h3 class="card-title">Analytics</h3>
             </div>
 
             <p class="card-desc">
@@ -80,7 +80,7 @@
             {% if "VIEW_LOG" in session.get("permissions", []) %}
             <div class="card-actions">
                 <a class="btn-modern btn-dark" href="{{ url_for('dashboard.dashboard') }}">
-                    View Dashboard
+                    View Analytics
                 </a>
             </div>
             {% else %}

@@ -20,9 +20,6 @@ def view_logs():
     category = request.args.get("category")
     environment = request.args.get("environment")
 
-    start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
-
     # User scope filter (TEAM / MINE)
     scope = request.args.get("scope", "TEAM")
     if scope not in ("TEAM", "MINE"):
@@ -37,6 +34,26 @@ def view_logs():
 
     conn = get_db_connection()
     cur = conn.cursor()
+
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    cur.execute("""
+        SELECT
+            MIN(uploaded_at),
+            MAX(uploaded_at)
+        FROM raw_files
+    """)
+    min_date, max_date = cur.fetchone()
+
+    # ---- Apply defaults ONLY if missing ----
+    if not start_date and min_date:
+        start_date = min_date.strftime("%Y-%m-%d")
+
+    if not end_date and max_date:
+        end_date = max_date.strftime("%Y-%m-%d")
+
+
 
     # -----------------------
     # Check if ADMIN
@@ -77,7 +94,7 @@ def view_logs():
     # -----------------------
     query = """
         SELECT
-            le.log_timestamp,
+            to_char(le.log_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
             ls.severity_code,
             lc.category_name,
             e.environment_code,
