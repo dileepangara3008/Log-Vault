@@ -1,16 +1,15 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request
 from db import get_db_connection
+from queries import (
+    CHECK_ADMIN,
+    GET_ALL_TEAMS
+
+)
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
 def is_admin_user(cur, user_id):
-    cur.execute("""
-        SELECT 1
-        FROM user_roles ur
-        JOIN roles r ON ur.role_id = r.role_id
-        WHERE ur.user_id = %s AND r.role_name = 'ADMIN'
-        LIMIT 1
-    """, (user_id,))
+    cur.execute(CHECK_ADMIN, (user_id,))
     return cur.fetchone() is not None
 
 
@@ -44,7 +43,7 @@ def dashboard():
     # -------------------------
     if admin:
         # Admin sees ALL teams
-        cur.execute("SELECT team_id, team_name FROM teams ORDER BY team_name")
+        cur.execute(GET_ALL_TEAMS)
         all_teams = cur.fetchall()
 
         if selected_team_id:

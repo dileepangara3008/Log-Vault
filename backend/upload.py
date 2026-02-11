@@ -1,6 +1,14 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, abort
+from flask import Blueprint, render_template, request, redirect, url_for, session, abort, flash
 from werkzeug.utils import secure_filename
 from db import get_db_connection
+from queries import (
+    CHECK_ADMIN,
+    GET_ENVIRONMENTS,
+    GET_TEAM_ID,
+    GET_EXISTING_HASHES,
+    INSERT_RAW_FILE,
+    INSERT_FILE_PARSE_STATS
+)
 from audit import log_audit
 from permissions import require_permission
 from parser.parser_runner import run_parser
@@ -20,11 +28,10 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# ... existing imports remain the same
-
 @upload_bp.route("/upload", methods=["GET", "POST"])
 @require_permission("UPLOAD_LOG")
 def upload_file():
+
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -32,23 +39,20 @@ def upload_file():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # admin check
-    cur.execute("""
-        SELECT 1
-        FROM user_roles ur
-        JOIN roles r ON ur.role_id = r.role_id
-        WHERE ur.user_id = %s AND r.role_name = 'ADMIN'
-        LIMIT 1
-    """, (user_id,))
+    # 🔹 Admin check (1 query)
+    cur.execute(CHECK_ADMIN, (user_id,))
     admin = cur.fetchone() is not None
 
-    cur.execute("SELECT environment_id, environment_code FROM environments")
+    # 🔹 Get environments (1 query)
+    cur.execute("select environment_id, environment_code from environments")
     environments = cur.fetchall()
 
     if request.method == "POST":
+
         parsed_files = []
         duplicate_files = []
         failed_files = []
+        unsupported = []
 
         overall_total = 0
         overall_inserted = 0
@@ -59,18 +63,31 @@ def upload_file():
         if not environment_id:
             abort(400, "Environment is required")
 
+        # 🔥 Fetch team_id ONCE (instead of inside loop)
+        cur.execute(GET_TEAM_ID, (user_id,))
+        team_row = cur.fetchone()
+        if not team_row:
+            abort(400, "User not assigned to team")
+
+        team_id = team_row[0]
+
+        # 🔥 Prefetch all existing hashes ONCE
+        cur.execute(GET_EXISTING_HASHES)
+        existing_hashes = {row[0] for row in cur.fetchall()}
+
         for file in files:
+
             if not file or file.filename == "":
                 continue
 
             if not allowed_file(file.filename):
-                abort(400, "Unsupported file type")
+                unsupported.append(file.filename)
+                continue
 
             filename = secure_filename(file.filename)
             extension = filename.rsplit(".", 1)[1].lower()
             format_name = ALLOWED_EXTENSIONS[extension]
 
-            # ---- read file ONCE ----
             file_bytes = file.read()
             file_size = len(file_bytes)
 
@@ -80,38 +97,14 @@ def upload_file():
 
             file_hash = hashlib.sha256(file_bytes).hexdigest()
 
-            # team_id
-            cur.execute(
-                "SELECT team_id FROM user_teams WHERE user_id=%s LIMIT 1",
-                (user_id,)
-            )
-            team_id = cur.fetchone()[0]
-
-            # duplicate check
-            cur.execute("""
-                SELECT 1
-                FROM raw_files
-                WHERE file_hash = %s
-                  AND is_archived = FALSE
-                LIMIT 1
-            """, (file_hash,))
-            if cur.fetchone():
+            # 🔥 Duplicate check WITHOUT DB hit
+            if file_hash in existing_hashes:
                 duplicate_files.append(filename)
                 continue
 
             try:
-                # insert raw_files
-                cur.execute("""
-                    INSERT INTO raw_files
-                    (team_id, uploaded_by, original_name, file_size_bytes,
-                     format_id, environment_id, file_hash)
-                    VALUES (
-                        %s, %s, %s, %s,
-                        (SELECT format_id FROM file_formats WHERE format_name=%s),
-                        %s, %s
-                    )
-                    RETURNING file_id
-                """, (
+                # Insert raw file
+                cur.execute(INSERT_RAW_FILE, (
                     team_id,
                     user_id,
                     filename,
@@ -122,10 +115,11 @@ def upload_file():
                 ))
 
                 file_id = cur.fetchone()[0]
-                log_audit(f"Uploaded {filename}")
+
+                # Commit before parser (important)
                 conn.commit()
 
-                # ---- parse logs ----
+                # Run parser
                 total, inserted, skipped = run_parser(
                     file_id,
                     BytesIO(file_bytes),
@@ -135,19 +129,41 @@ def upload_file():
                 overall_total += total
                 overall_inserted += inserted
 
-                if inserted > 0:
-                    parsed_files.append(filename)
-                else:
-                    failed_files.append(filename)
+                parsed_percentage = int((inserted / total) * 100) if total else 0
 
-            except Exception:
+                # Insert stats
+                cur.execute(INSERT_FILE_PARSE_STATS, (
+                    file_id,
+                    total,
+                    inserted,
+                    skipped,
+                    parsed_percentage
+                ))
+
+                log_audit(f"Uploaded {filename}")
+                conn.commit()
+
+                # Classification
+                if total == 0 or inserted == 0:
+                    failed_files.append(filename)
+                else:
+                    parsed_files.append(filename)
+
+                # Add hash to set (avoid duplicates within same batch)
+                existing_hashes.add(file_hash)
+
+            except Exception as e:
                 conn.rollback()
+                print("UPLOAD ERROR:", e)
                 failed_files.append(filename)
 
         cur.close()
         conn.close()
 
         parsed_pct = int((overall_inserted / overall_total) * 100) if overall_total else 0
+
+        if unsupported:
+            flash(f"Unsupported files skipped: {', '.join(unsupported)}", "warning")
 
         return redirect(url_for(
             "upload.upload_file",
@@ -161,4 +177,5 @@ def upload_file():
 
     cur.close()
     conn.close()
+
     return render_template("upload.html", environments=environments, admin=admin)

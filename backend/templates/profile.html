@@ -14,37 +14,38 @@
         <table class="info-table">
             <tr>
                 <th>First Name</th>
-                <td>{{ user[1] }}</td>
+                <td>{{ user.first_name }}</td>
             </tr>
             <tr>
                 <th>Last Name</th>
-                <td>{{ user[2] }}</td>
+                <td>{{ user.last_name }}</td>
             </tr>
             <tr>
                 <th>Phone</th>
-                <td>{{ user[3] }}</td>
+                <td>{{ user.phone_no }}</td>
             </tr>
             <tr>
                 <th>Email</th>
-                <td>{{ user[4] }}</td>
+                <td>{{ user.email }}</td>
             </tr>
             <tr>
                 <th>Username</th>
-                <td>{{ user[5] }}</td>
+                <td>{{ user.username }}</td>
             </tr>
             <tr>
                 <th>Gender</th>
-                <td>{{ user[6] }}</td>
+                <td>{{ user.gender }}</td>
             </tr>
             <tr>
                 <th>Team</th>
-                <td>{{ team_name }}</td>
+                <td>{{ user.team_name }}</td>
             </tr>
             <tr>
                 <th>Created At</th>
-                <td>{{ user[7] }}</td>
+                <td>{{ user.created_at }}</td>
             </tr>
         </table>
+
 
         <div class="profile-actions">
             <a class="btn-primary" href="{{ url_for('profile.edit_profile') }}">

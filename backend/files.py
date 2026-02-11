@@ -1,22 +1,26 @@
 import os
-from flask import Blueprint, render_template, session, redirect, url_for, request, abort
+from flask import Blueprint, render_template, session, redirect, url_for, abort
 from db import get_db_connection
+from queries import (
+    GET_ALL_FILES_ADMIN,
+    GET_USER_FILES,
+    GET_FILE_BY_ID,
+    DELETE_FILE,
+    COUNT_FILE_LOGS,
+    INSERT_ARCHIVE,
+    MARK_FILE_ARCHIVED,
+    UNARCHIVE_FILE,
+    DELETE_ARCHIVE
+)
 from audit import log_audit
 from config import UPLOAD_FOLDER
 
 files_bp = Blueprint("files", __name__)
 
-def is_admin_user(cur, user_id):
-    cur.execute("""
-        SELECT 1
-        FROM user_roles ur
-        JOIN roles r ON ur.role_id = r.role_id
-        WHERE ur.user_id = %s AND LOWER(r.role_name) = 'admin'
-        LIMIT 1
-    """, (user_id,))
-    return cur.fetchone() is not None
 
-
+# =====================================================
+# LIST FILES
+# =====================================================
 
 @files_bp.route("/files")
 def list_files():
@@ -24,69 +28,49 @@ def list_files():
     if not user_id:
         return redirect(url_for("auth.login"))
 
+    is_admin = session.get("is_admin", False)
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    admin = is_admin_user(cur, user_id)
-
-    if admin:
-        cur.execute("""
-            SELECT rf.file_id, rf.original_name, rf.file_size_bytes, to_char(rf.uploaded_at,'YYYY-MM-DD HH24:MI:SS'),
-                   u.email, t.team_name, rf.is_archived
-            FROM raw_files rf
-            JOIN users u ON rf.uploaded_by = u.user_id
-            JOIN teams t ON rf.team_id = t.team_id
-            ORDER BY rf.uploaded_at DESC
-        """)
+    if is_admin:
+        cur.execute(GET_ALL_FILES_ADMIN)
     else:
-        cur.execute("""
-            SELECT rf.file_id, rf.original_name, rf.file_size_bytes, to_char(rf.uploaded_at,'YYYY-MM-DD HH24:MI:SS'),
-                   u.email, t.team_name, rf.is_archived
-            FROM raw_files rf
-            JOIN users u ON rf.uploaded_by = u.user_id
-            JOIN teams t ON rf.team_id = t.team_id
-            WHERE rf.uploaded_by = %s AND rf.is_archived=FALSE
-            ORDER BY rf.uploaded_at DESC
-        """, (user_id,))
+        cur.execute(GET_USER_FILES, (user_id,))
 
     files = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    return render_template("files.html", files=files, admin=admin)
+    return render_template("files.html", files=files, admin=is_admin)
 
+
+# =====================================================
+# DELETE FILE
+# =====================================================
 
 @files_bp.route("/files/<int:file_id>/delete", methods=["POST"])
 def delete_file(file_id):
+
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
 
+    is_admin = session.get("is_admin", False)
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    admin = is_admin_user(cur, user_id)
-
-    # Fetch file info
-    cur.execute("""
-        SELECT file_id, original_name, uploaded_by
-        FROM raw_files
-        WHERE file_id = %s
-    """, (file_id,))
+    cur.execute(GET_FILE_BY_ID, (file_id,))
     row = cur.fetchone()
 
     if not row:
-        cur.close()
-        conn.close()
         abort(404, "File not found")
 
-    file_id_db, filename, uploaded_by = row
+    file_id_db, filename, uploaded_by, _ = row
 
-    # Permission check
-    if not admin and uploaded_by != user_id:
-        cur.close()
-        conn.close()
+    if not is_admin and uploaded_by != user_id:
         abort(403, "You can delete only your uploaded files")
 
     # Delete file from disk
@@ -94,8 +78,7 @@ def delete_file(file_id):
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    # Delete from DB (log_entries will be deleted automatically because ON DELETE CASCADE)
-    cur.execute("DELETE FROM raw_files WHERE file_id=%s", (file_id,))
+    cur.execute(DELETE_FILE, (file_id,))
     conn.commit()
 
     log_audit(f"Deleted file {filename}")
@@ -105,62 +88,40 @@ def delete_file(file_id):
 
     return redirect(url_for("files.list_files"))
 
+
+# =====================================================
+# ARCHIVE FILE
+# =====================================================
+
 @files_bp.route("/files/<int:file_id>/archive", methods=["POST"])
 def archive_file(file_id):
+
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
 
+    if not session.get("is_admin", False):
+        abort(403, "Only admin can archive files")
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    admin = is_admin_user(cur, user_id)
-    if not admin:
-        cur.close()
-        conn.close()
-        abort(403, "Only admin can archive files")
-
-    # Fetch file info
-    cur.execute("""
-        SELECT file_id, original_name, is_archived
-        FROM raw_files
-        WHERE file_id = %s
-    """, (file_id,))
+    cur.execute(GET_FILE_BY_ID, (file_id,))
     row = cur.fetchone()
 
     if not row:
-        cur.close()
-        conn.close()
         abort(404, "File not found")
 
-    file_id_db, filename, is_archived = row
+    file_id_db, filename, _, is_archived = row
 
-    # If already archived, do nothing
     if is_archived:
-        cur.close()
-        conn.close()
         return redirect(url_for("files.list_files"))
 
-    # Count total logs for that file
-    cur.execute("""
-        SELECT COUNT(*)
-        FROM log_entries
-        WHERE file_id = %s
-    """, (file_id,))
+    cur.execute(COUNT_FILE_LOGS, (file_id,))
     total_records = cur.fetchone()[0]
 
-    # Insert into archives table
-    cur.execute("""
-        INSERT INTO archives (file_id, archived_on, total_records)
-        VALUES (%s, NOW(), %s)
-    """, (file_id, total_records))
-
-    # Mark raw_files as archived
-    cur.execute("""
-        UPDATE raw_files
-        SET is_archived = TRUE
-        WHERE file_id = %s
-    """, (file_id,))
+    cur.execute(INSERT_ARCHIVE, (file_id, total_records))
+    cur.execute(MARK_FILE_ARCHIVED, (file_id,))
 
     conn.commit()
 
@@ -172,44 +133,33 @@ def archive_file(file_id):
     return redirect(url_for("files.list_files"))
 
 
+# =====================================================
+# RESTORE FILE
+# =====================================================
+
 @files_bp.route("/files/<int:file_id>/restore", methods=["POST"])
 def restore_file(file_id):
+
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
 
+    if not session.get("is_admin", False):
+        abort(403, "Only admin can restore archived files")
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    admin = is_admin_user(cur, user_id)
-    if not admin:
-        cur.close()
-        conn.close()
-        abort(403, "Only admin can restore archived files")
-
-    # Check file exists
-    cur.execute("""
-        SELECT file_id, original_name
-        FROM raw_files
-        WHERE file_id = %s
-    """, (file_id,))
+    cur.execute(GET_FILE_BY_ID, (file_id,))
     row = cur.fetchone()
 
     if not row:
-        cur.close()
-        conn.close()
         abort(404, "File not found")
 
     filename = row[1]
 
-    cur.execute("DELETE FROM archives WHERE file_id = %s", (file_id,))
-
-    # Restore file (unarchive)
-    cur.execute("""
-        UPDATE raw_files
-        SET is_archived = FALSE
-        WHERE file_id = %s
-    """, (file_id,))
+    cur.execute(DELETE_ARCHIVE, (file_id,))
+    cur.execute(UNARCHIVE_FILE, (file_id,))
 
     conn.commit()
 

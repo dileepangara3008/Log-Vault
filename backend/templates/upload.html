@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block title %}Upload Logs{% endblock %}
 
 {% block content %}
@@ -89,6 +90,8 @@
     <div class="upload-title">📤 Upload Log File</div>
 
     <div class="upload-card">
+        {% include "_flash.html" %}
+
         <form method="post" enctype="multipart/form-data" onsubmit="showLoader()">
 
             <div class="form-grid">
@@ -101,6 +104,7 @@
                         <option value="{{ env[0] }}">{{ env[1] }}</option>
                         {% endfor %}
                     </select>
+
                 </div>
 
                 <div class="form-group">

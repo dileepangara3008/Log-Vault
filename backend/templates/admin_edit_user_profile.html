@@ -53,7 +53,7 @@
                     <select name="team_id" required>
                         <option value="">Select Team</option>
                         {% for team in teams %}
-                        <option value="{{ team[0] }}" {% if team1[1]==team[0] %} selected {% endif %}>
+                        <option value="{{ team[0] }}" {% if team[1]==team[0] %} selected {% endif %}>
                             {{ team[1] }}
                         </option>
                         {% endfor %}

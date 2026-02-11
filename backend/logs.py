@@ -2,6 +2,15 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from db import get_db_connection
 from audit import log_audit
 from permissions import require_permission
+from queries import (
+    GET_MIN_MAX_UPLOAD_DATE,   # or GET_MIN_MAX_LOG_DATE
+    GET_ALL_TEAMS,
+    GET_USER_TEAM_IDS,
+    GET_SEVERITIES,
+    GET_CATEGORIES,
+    GET_ENVIRONMENTS,
+    CHECK_ADMIN
+)
 
 logs_bp = Blueprint("logs", __name__)
 
@@ -38,12 +47,7 @@ def view_logs():
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
 
-    cur.execute("""
-        SELECT
-            MIN(uploaded_at),
-            MAX(uploaded_at)
-        FROM raw_files
-    """)
+    cur.execute(GET_MIN_MAX_UPLOAD_DATE)
     min_date, max_date = cur.fetchone()
 
     # ---- Apply defaults ONLY if missing ----
@@ -58,13 +62,7 @@ def view_logs():
     # -----------------------
     # Check if ADMIN
     # -----------------------
-    cur.execute("""
-        SELECT 1
-        FROM user_roles ur
-        JOIN roles r ON ur.role_id = r.role_id
-        WHERE ur.user_id = %s AND r.role_name = 'ADMIN'
-        LIMIT 1
-    """, (user_id,))
+    cur.execute(CHECK_ADMIN, (user_id,))
     is_admin = cur.fetchone() is not None
 
     # -----------------------
@@ -73,7 +71,7 @@ def view_logs():
     all_teams = []
 
     if is_admin:
-        cur.execute("SELECT team_id, team_name FROM teams ORDER BY team_name")
+        cur.execute(GET_ALL_TEAMS)
         all_teams = cur.fetchall()
 
         if selected_team_id:
@@ -81,7 +79,7 @@ def view_logs():
         else:
             team_ids = [t[0] for t in all_teams]
     else:
-        cur.execute("SELECT team_id FROM user_teams WHERE user_id=%s", (user_id,))
+        cur.execute(GET_USER_TEAM_IDS, (user_id,))
         team_ids = [row[0] for row in cur.fetchall()]
 
     if not team_ids:
@@ -156,13 +154,13 @@ def view_logs():
     # -----------------------
     # Filter dropdown options
     # -----------------------
-    cur.execute("SELECT severity_code FROM log_severities ORDER BY severity_level")
+    cur.execute(GET_SEVERITIES)
     severities = [r[0] for r in cur.fetchall()]
 
-    cur.execute("SELECT category_name FROM log_categories ORDER BY category_name")
+    cur.execute(GET_CATEGORIES)
     categories = [r[0] for r in cur.fetchall()]
 
-    cur.execute("SELECT environment_code FROM environments ORDER BY environment_code")
+    cur.execute(GET_ENVIRONMENTS)
     environments = [r[0] for r in cur.fetchall()]
 
     # log_audit("VIEW_LOGS", "log_entries", None, f"scope={scope}, q={keyword}")

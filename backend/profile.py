@@ -4,6 +4,11 @@ from audit import log_audit
 
 profile_bp = Blueprint("profile", __name__)
 
+
+# =====================================================
+# VIEW PROFILE
+# =====================================================
+
 @profile_bp.route("/profile")
 def view_profile():
     user_id = session.get("user_id")
@@ -14,27 +19,44 @@ def view_profile():
     cur = conn.cursor()
 
     cur.execute("""
-                select team_id from user_teams where user_id=%s
-                """,(user_id,))
-    team=cur.fetchone()[0]
-
-    cur.execute("""
-                select team_name from teams where team_id=%s
-            """,(team,))
-    team_name=cur.fetchone()[0]
-
-    cur.execute("""
-        SELECT user_id, first_name, last_name, phone_no, email, username, gender, to_char(created_at,'YYYY-MM-DD HH24:MI:SS')
-        FROM users
-        WHERE user_id = %s
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.phone_no,
+            u.email,
+            u.username,
+            u.gender,
+            to_char(u.created_at,'YYYY-MM-DD HH24:MI:SS') AS created_at,
+            t.team_name
+        FROM users u
+        LEFT JOIN user_teams ut ON ut.user_id = u.user_id
+        LEFT JOIN teams t ON t.team_id = ut.team_id
+        WHERE u.user_id = %s
     """, (user_id,))
-    user = cur.fetchone()
+
+    row = cur.fetchone()
+
+    if not row:
+        cur.close()
+        conn.close()
+        return redirect(url_for("auth.logout"))
+
+    columns = [desc[0] for desc in cur.description]
+    user = dict(zip(columns, row))
 
     cur.close()
     conn.close()
 
-    return render_template("profile.html", user=user, team_name=team_name)
+    return render_template(
+        "profile.html",
+        user=user
+    )
 
+
+# =====================================================
+# EDIT PROFILE
+# =====================================================
 
 @profile_bp.route("/profile/edit", methods=["GET", "POST"])
 def edit_profile():
@@ -72,14 +94,27 @@ def edit_profile():
 
         return redirect(url_for("profile.view_profile"))
 
+    # GET request
     cur.execute("""
         SELECT first_name, last_name, phone_no, email, username, gender
         FROM users
         WHERE user_id = %s
     """, (user_id,))
-    user = cur.fetchone()
+
+    row = cur.fetchone()
+
+    if not row:
+        cur.close()
+        conn.close()
+        return redirect(url_for("auth.logout"))
+
+    columns = [desc[0] for desc in cur.description]
+    user = dict(zip(columns, row))
 
     cur.close()
     conn.close()
 
-    return render_template("edit_profile.html", user=user)
+    return render_template(
+        "edit_profile.html",
+        user=user
+    )
