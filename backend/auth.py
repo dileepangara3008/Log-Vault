@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import bcrypt
 import re
 from flask import Blueprint, render_template, request, redirect, url_for, session
@@ -126,7 +126,7 @@ def login():
             conn.close()
             return render_template("login.html", error="Account disabled")
 
-        if locked and locked_until and locked_until > datetime.utcnow():
+        if locked and locked_until and locked_until > datetime.now(timezone.utc):
             cur.close()
             conn.close()
             return render_template("login.html", error="Account locked")

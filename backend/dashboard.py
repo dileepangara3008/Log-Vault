@@ -136,7 +136,7 @@ def dashboard():
             COUNT(*) AS total_logs
         FROM log_entries le
         JOIN log_categories lc ON le.category_id = lc.category_id
-        JOIN raw_files rf ON le.file_id = rf.file_id   -- ✅ REQUIRED
+        JOIN raw_files rf ON le.file_id = rf.file_id   
         {where_sql} AND rf.is_archived = FALSE
         GROUP BY lc.category_name
         ORDER BY total_logs DESC

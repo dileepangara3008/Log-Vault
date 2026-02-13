@@ -39,11 +39,11 @@ def upload_file():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # 🔹 Admin check (1 query)
+    #  Admin check 
     cur.execute(CHECK_ADMIN, (user_id,))
     admin = cur.fetchone() is not None
 
-    # 🔹 Get environments (1 query)
+    #  Get environments 
     cur.execute("select environment_id, environment_code from environments")
     environments = cur.fetchall()
 
@@ -63,7 +63,7 @@ def upload_file():
         if not environment_id:
             abort(400, "Environment is required")
 
-        # 🔥 Fetch team_id ONCE (instead of inside loop)
+        #  Fetch team_id ONCE (instead of inside loop)
         cur.execute(GET_TEAM_ID, (user_id,))
         team_row = cur.fetchone()
         if not team_row:
@@ -71,7 +71,7 @@ def upload_file():
 
         team_id = team_row[0]
 
-        # 🔥 Prefetch all existing hashes ONCE
+        #  Prefetch all existing hashes ONCE
         cur.execute(GET_EXISTING_HASHES)
         existing_hashes = {row[0] for row in cur.fetchall()}
 
@@ -97,7 +97,7 @@ def upload_file():
 
             file_hash = hashlib.sha256(file_bytes).hexdigest()
 
-            # 🔥 Duplicate check WITHOUT DB hit
+            #  Duplicate check WITHOUT DB hit
             if file_hash in existing_hashes:
                 duplicate_files.append(filename)
                 continue

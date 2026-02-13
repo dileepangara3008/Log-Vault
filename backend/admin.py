@@ -84,7 +84,7 @@ def create_user():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # 🔥 Fetch dropdown data FIRST
+    #  Fetch dropdown data FIRST
     cur.execute(GET_TEAMS)
     teams = cur.fetchall()
 
