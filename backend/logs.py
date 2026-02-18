@@ -3,7 +3,7 @@ from db import get_db_connection
 from audit import log_audit
 from permissions import require_permission
 from queries import (
-    GET_MIN_MAX_UPLOAD_DATE,   # or GET_MIN_MAX_LOG_DATE
+    GET_MIN_MAX_UPLOAD_DATE,  
     GET_ALL_TEAMS,
     GET_USER_TEAM_IDS,
     GET_SEVERITIES,

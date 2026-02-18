@@ -63,7 +63,7 @@ def upload_file():
         if not environment_id:
             abort(400, "Environment is required")
 
-        #  Fetch team_id ONCE (instead of inside loop)
+        #  Fetch team_id ONCE 
         cur.execute(GET_TEAM_ID, (user_id,))
         team_row = cur.fetchone()
         if not team_row:
@@ -97,7 +97,7 @@ def upload_file():
 
             file_hash = hashlib.sha256(file_bytes).hexdigest()
 
-            #  Duplicate check WITHOUT DB hit
+            #  Duplicate check 
             if file_hash in existing_hashes:
                 duplicate_files.append(filename)
                 continue
@@ -116,7 +116,7 @@ def upload_file():
 
                 file_id = cur.fetchone()[0]
 
-                # Commit before parser (important)
+                # Commit before parser
                 conn.commit()
 
                 # Run parser

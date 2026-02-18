@@ -34,12 +34,12 @@ def run_parser(file_id, file_stream, format_name):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    #  PRELOAD SEVERITIES (ONE DB HIT)
+    #  PRELOAD SEVERITIES 
     cur.execute("SELECT severity_code, severity_id FROM log_severities")
     severity_map = {k.upper(): v for k, v in cur.fetchall()}
     default_severity_id = severity_map.get("INFO")
 
-    #  PRELOAD CATEGORIES (ONE DB HIT)
+    #  PRELOAD CATEGORIES 
     cur.execute("SELECT category_name, category_id FROM log_categories")
     category_map = {k: v for k, v in cur.fetchall()}
     default_category_id = category_map.get("UNCATEGORIZED")
@@ -59,7 +59,7 @@ def run_parser(file_id, file_stream, format_name):
             severity = (severity or "INFO").upper()
             severity_id = severity_map.get(severity, default_severity_id)
 
-            # ---- Category detection (no DB hit) ----
+            # ---- Category detection  ----
             try:
                 category = detect_category(message)
             except Exception:

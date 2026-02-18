@@ -30,7 +30,7 @@ def register():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Fetch dropdown data (GET + POST both need it)
+    # Fetch dropdown data 
     cur.execute(GET_TEAMS)
     teams = cur.fetchall()
 

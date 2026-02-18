@@ -4,8 +4,8 @@ from parser.time_parser import parse_timestamp
 
 
 SPACE_PATTERN = re.compile(
-    r"^\[?(?P<date>\d{4}-\d{2}-\d{2})\s+"
-    r"(?P<time>\d{2}:\d{2}:\d{2}(?:,\d{3})?)\]?\s+"
+    r"^\[?(?P<date>\d{4}-\d{2}-\d{2})[T\s]+"
+    r"(?P<time>\d{2}:\d{2}:\d{2}(?:[.,]\d{3})?)(?:Z)?\]?\s+"
     r"(?P<severity>DEBUG|INFO|WARN|WARNING|ERROR|CRITICAL|FATAL)\s+"
     r"(?:\[[^\]]+\]\s+)?"
     r"(?:[A-Za-z0-9_.-]+\s*-\s*)?"
@@ -15,12 +15,13 @@ SPACE_PATTERN = re.compile(
 
 
 PIPE_PATTERN = re.compile(
-    r"^\[?(?P<date>\d{4}-\d{2}-\d{2})\s+"
-    r"(?P<time>\d{2}:\d{2}:\d{2},\d{3})\]?\s*\|\s*"
+    r"^\[?(?P<date>\d{4}-\d{2}-\d{2})[T\s]+"
+    r"(?P<time>\d{2}:\d{2}:\d{2}(?:[.,]\d{3})?)(?:Z)?\]?\s*\|\s*"
     r"(?P<severity>DEBUG|INFO|WARN|WARNING|ERROR|CRITICAL|FATAL)\s*\|\s*"
     r"(?P<message>.+)$",
     re.IGNORECASE
 )
+
 
 
 # def parse_timestamp(date, time):
