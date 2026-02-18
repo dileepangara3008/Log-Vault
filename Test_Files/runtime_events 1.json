@@ -1,0 +1,121 @@
+[
+  {
+    "timestamp": "2026-01-15T06:59:58Z",
+    "severity": "INFO",
+    "environment": "PROD",
+    "host": "api-01",
+    "service": "api-gateway",
+    "message": "API Gateway boot sequence started",
+    "version": "2.4.1",
+    "region": "ap-south-1"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:00Z",
+    "severity": "INFO",
+    "environment": "PROD",
+    "host": "api-01",
+    "service": "api-gateway",
+    "message": "Listening on port 443",
+    "request_id": "boot-req-001"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:02Z",
+    "severity": "INFO",
+    "environment": "PROD",
+    "host": "auth-01",
+    "service": "auth-service",
+    "message": "JWT public keys loaded",
+    "key_count": 4
+  },
+  {
+    "timestamp": "2026-01-15T07:00:05Z",
+    "severity": "DEBUG",
+    "environment": "PROD",
+    "host": "user-02",
+    "service": "user-service",
+    "message": "Fetching user profile",
+    "user_id": "U10293",
+    "request_id": "req-acde129"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:05Z",
+    "severity": "DEBUG",
+    "environment": "PROD",
+    "host": "user-02",
+    "service": "user-service",
+    "message": "Fetching user profile",
+    "user_id": "U10293",
+    "request_id": "req-acde129"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:07Z",
+    "severity": "WARN",
+    "environment": "PROD",
+    "host": "auth-01",
+    "service": "auth-service",
+    "message": "JWT expired",
+    "user_id": "U10293",
+    "token_id": "jwt-77881"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:10Z",
+    "severity": "ERROR",
+    "environment": "PROD",
+    "host": "payment-01",
+    "service": "payment-service",
+    "message": "Payment gateway timeout",
+    "endpoint": "/v1/pay",
+    "latency_ms": 5021,
+    "request_id": "pay-req-991"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:11Z",
+    "severity": "INFO",
+    "environment": "PROD",
+    "host": "audit-01",
+    "service": "audit",
+    "message": "Payment failure recorded",
+    "reference": "pay-req-991"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:15Z",
+    "severity": "INFO",
+    "environment": "PROD",
+    "host": "infra-01",
+    "service": "kubernetes",
+    "message": "Pod restarted",
+    "pod": "payment-01",
+    "namespace": "prod"
+  },
+  {
+    "timestamp": "2026-01-15T07:00:20Z",
+    "severity": "DEBUG",
+    "environment": "PROD",
+    "host": "monitor-01",
+    "service": "metrics",
+    "message": "Heartbeat",
+    "cpu": 61,
+    "memory": 72
+  },
+  {
+    "bad_json": "missing required fields"
+  },
+  {
+    "timestamp": "2026-01-15T07:01:00Z",
+    "severity": "FATAL",
+    "environment": "PROD",
+    "host": "kernel-02",
+    "service": "os",
+    "message": "Kernel panic - not syncing",
+    "error_code": "KP-9001"
+  },
+  {
+    "timestamp": "2026-01-15T07:02:00Z",
+    "severity": "INFO",
+    "environment": "DEV",
+    "host": "dev-api-01",
+    "service": "payment-service",
+    "message": "Developer tested retry logic"
+  }
+]
+

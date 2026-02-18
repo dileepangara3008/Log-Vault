@@ -1,0 +1,51 @@
+timestamp,severity,environment,host,service,message
+2026-01-15T00:59:55Z,INFO,PROD,batch01,cron,Nightly batch scheduler initialized
+2026-01-15T01:00:00Z,INFO,PROD,batch01,cron,Nightly batch started job=ETL_DAILY
+2026-01-15T01:00:05Z,INFO,PROD,batch01,etl,Extract phase started source=orders_db
+2026-01-15T01:00:20Z,INFO,PROD,batch01,etl,Extract phase completed records=124560
+2026-01-15T01:00:30Z,INFO,PROD,batch01,etl,Transform phase started
+2026-01-15T01:01:10Z,DEBUG,PROD,batch01,etl,Applying transformation ruleset=v3
+2026-01-15T01:01:30Z,INFO,PROD,batch01,etl,Transform phase completed records=124560
+
+2026-01-15T01:02:00Z,ERROR,PROD,batch01,etl,Database connection timeout host=db-prod-01
+2026-01-15T01:02:00Z,ERROR,PROD,batch01,etl,Database connection timeout host=db-prod-01
+2026-01-15T01:02:10Z,WARN,PROD,batch01,etl,Retrying load attempt=1
+2026-01-15T01:02:30Z,WARN,PROD,batch01,etl,Retrying load attempt=2
+2026-01-15T01:02:50Z,ERROR,PROD,batch01,etl,Database connection timeout host=db-prod-01
+2026-01-15T01:03:10Z,INFO,PROD,batch01,etl,Load completed after retry
+
+2026-01-15T01:03:30Z,INFO,PROD,batch01,audit,ETL job completed successfully job=ETL_DAILY
+
+,,,,
+2026-01-15T01:05:00Z,INFO,PROD,server01,infra,Disk cleanup started
+2026-01-15T01:05:30Z,WARN,PROD,server01,infra,Disk usage high usage=87%
+2026-01-15T01:05:30Z,WARN,PROD,server01,infra,Disk usage high usage=87%
+2026-01-15T01:06:10Z,INFO,PROD,server01,infra,Disk cleanup completed
+
+2026-01-15T01:07:00Z,INFO,PROD,sec01,auth,User login attempt user=admin ip=10.1.1.9
+2026-01-15T01:07:05Z,WARN,PROD,sec01,auth,Invalid password user=admin ip=10.1.1.9
+2026-01-15T01:07:05Z,WARN,PROD,sec01,auth,Invalid password user=admin ip=10.1.1.9
+2026-01-15T01:07:10Z,ERROR,PROD,sec01,auth,Account temporarily locked user=admin
+2026-01-15T01:07:15Z,INFO,PROD,sec01,audit,Admin account locked due to failed attempts
+
+2026-01-15T01:10:00Z,INFO,QA,batch-qa01,cron,QA batch scheduler started
+2026-01-15T01:10:10Z,INFO,QA,batch-qa01,etl,QA extract phase started source=test_orders_db
+2026-01-15T01:10:30Z,ERROR,QA,batch-qa01,etl,NullPointerException at TransformStep.java:88
+2026-01-15T01:10:30Z,ERROR,QA,batch-qa01,etl,NullPointerException at TransformStep.java:88
+2026-01-15T01:10:45Z,WARN,QA,batch-qa01,etl,Retrying transform with fallback ruleset
+2026-01-15T01:11:10Z,INFO,QA,batch-qa01,etl,Transform completed using fallback ruleset
+2026-01-15T01:11:30Z,INFO,QA,batch-qa01,audit,QA ETL job completed with warnings
+
+,,,,
+2026-01-15T01:15:00Z,INFO,DEV,dev01,etl,Developer-triggered ETL test started
+2026-01-15T01:15:20Z,DEBUG,DEV,dev01,etl,Testing new transformation logic
+2026-01-15T01:15:40Z,ERROR,DEV,dev01,etl,IndexOutOfBoundsException at Mapper.java:42
+2026-01-15T01:15:40Z,ERROR,DEV,dev01,etl,IndexOutOfBoundsException at Mapper.java:42
+2026-01-15T01:16:00Z,INFO,DEV,dev01,etl,Developer test aborted
+2026-01-15T01:16:10Z,INFO,DEV,dev01,audit,Developer stopped ETL test run
+
+2026-01-15T01:20:00Z,INFO,PROD,monitor01,infra,CPU usage spike detected host=batch01 usage=91%
+2026-01-15T01:20:10Z,ERROR,PROD,monitor01,infra,CPU saturation threshold exceeded host=batch01
+2026-01-15T01:20:10Z,ERROR,PROD,monitor01,infra,CPU saturation threshold exceeded host=batch01
+2026-01-15T01:20:30Z,INFO,PROD,monitor01,audit,Incident created severity=HIGH ref=INC12091
+

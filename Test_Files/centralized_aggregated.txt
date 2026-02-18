@@ -1,0 +1,53 @@
+2026-01-12T04:59:58Z INFO  PROD host=app01 service=order-service Order service starting
+2026-01-12T04:59:59Z INFO  PROD host=app02 service=order-service Order service starting
+2026-01-12T05:00:00Z INFO  QA   host=qa01  service=order-service QA order service starting
+
+2026-01-12T05:00:01Z INFO  PROD host=app01 service=payment-service Payment service started
+2026-01-12T05:00:01Z INFO  PROD host=app02 service=payment-service Payment service started
+2026-01-12T05:00:02Z INFO  DEV  host=dev01 service=payment-service Dev payment service started
+
+     
+2026-01-12T05:01:10Z DEBUG PROD host=app01 service=order-service Creating order orderId=ORD9001
+2026-01-12T05:01:11Z DEBUG PROD host=app02 service=order-service Creating order orderId=ORD9002
+2026-01-12T05:01:12Z DEBUG QA   host=qa01  service=order-service Testing order creation
+
+2026-01-12T05:01:20Z INFO  PROD host=app01 service=order-service Order validated orderId=ORD9001
+2026-01-12T05:01:21Z INFO  PROD host=app02 service=order-service Order validated orderId=ORD9002
+
+2026-01-12T05:02:00Z WARN  PROD host=app01 service=auth Invalid password user=vinitha ip=10.1.1.12
+2026-01-12T05:02:00Z WARN  PROD host=app01 service=auth Invalid password user=vinitha ip=10.1.1.12
+
+2026-01-12T05:02:10Z WARN  QA   host=qa01  service=auth Weak password used user=test_user
+2026-01-12T05:02:15Z ERROR PROD host=app01 service=auth Account locked user=vinitha
+
+2026-01-12T05:02:20Z INFO  PROD host=sec01 service=audit User=admin Action=LOCK_ACCOUNT Target=vinitha
+2026-01-12T05:02:25Z INFO  QA   host=qa01  service=audit Tester viewed SECURITY logs
+
+     
+2026-01-12T05:03:00Z ERROR PROD host=app02 service=inventory Disk write failed device=/dev/sda1
+2026-01-12T05:03:00Z ERROR PROD host=app02 service=inventory Disk write failed device=/dev/sda1
+
+2026-01-12T05:03:10Z WARN  PROD host=server01 service=kernel I/O latency detected
+2026-01-12T05:03:20Z INFO  PROD host=server01 service=monitor Disk cleanup initiated
+
+2026-01-12T05:04:00Z ERROR PROD host=cloud01 service=network Connection timeout endpoint=payment-gateway
+2026-01-12T05:04:00Z ERROR PROD host=cloud01 service=network Connection timeout endpoint=payment-gateway
+
+Malformed container output $$$$$$$$
+
+2026-01-12T05:04:30Z INFO  PROD host=cloud01 service=audit Action=FAILOVER Trigger=NETWORK_TIMEOUT
+
+2026-01-12T05:05:00Z DEBUG PROD host=app01 service=order-service Heartbeat
+2026-01-12T05:05:00Z DEBUG PROD host=app02 service=order-service Heartbeat
+2026-01-12T05:05:00Z DEBUG QA   host=qa01  service=order-service Heartbeat
+
+     
+2026-01-12T05:06:15Z ERROR DEV  host=dev01 service=payment-service NullPointerException at PaymentUtil.java:88
+2026-01-12T05:06:15Z ERROR DEV  host=dev01 service=payment-service NullPointerException at PaymentUtil.java:88
+
+2026-01-12T05:07:00Z INFO  DEV  host=dev01 service=audit Developer tested payment retry
+
+2026-01-12T05:08:00Z FATAL PROD host=server02 service=kernel Kernel panic - not syncing
+
+2026-01-12T05:08:20Z INFO  PROD host=monitor01 service=infra Incident created severity=CRITICAL ref=INC77221
+

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<logs source="legacy-app-server" generatedBy="LegacyLogger v3.4">
+
+    <!-- Application startup -->
+    <log>
+        <timestamp>2026-01-15T09:00:00Z</timestamp>
+        <severity>INFO</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>audit</service>
+        <message>System startup completed</message>
+    </log>
+
+    <!-- Security warning -->
+    <log>
+        <timestamp>2026-01-15T09:01:00Z</timestamp>
+        <severity>WARN</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>auth</service>
+        <message>Multiple failed login attempts detected</message>
+    </log>
+
+    <!-- Security error -->
+    <log>
+        <timestamp>2026-01-15T09:01:10Z</timestamp>
+        <severity>ERROR</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>auth</service>
+        <message>Unauthorized access attempt</message>
+        <user>unknown</user>
+        <ip>192.168.10.45</ip>
+    </log>
+
+    <!-- Duplicate log (real systems do this a lot) -->
+    <log>
+        <timestamp>2026-01-15T09:01:10Z</timestamp>
+        <severity>ERROR</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>auth</service>
+        <message>Unauthorized access attempt</message>
+        <user>unknown</user>
+        <ip>192.168.10.45</ip>
+    </log>
+
+    <!-- Malformed / partial legacy log -->
+    <log>
+        <message>Malformed legacy entry without metadata</message>
+    </log>
+
+    <!-- Infrastructure log -->
+    <log>
+        <timestamp>2026-01-15T09:02:30Z</timestamp>
+        <severity>INFO</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>infra</service>
+        <message>Disk cleanup completed</message>
+        <disk>/var</disk>
+        <freedSpaceMB>2048</freedSpaceMB>
+    </log>
+
+    <!-- Debug heartbeat -->
+    <log>
+        <timestamp>2026-01-15T09:03:00Z</timestamp>
+        <severity>DEBUG</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>infra</service>
+        <message>Heartbeat check OK</message>
+    </log>
+
+    <!-- Fatal system failure -->
+    <log>
+        <timestamp>2026-01-15T09:05:45Z</timestamp>
+        <severity>FATAL</severity>
+        <environment>PROD</environment>
+        <host>legacy01</host>
+        <service>kernel</service>
+        <message>Kernel panic - system halted</message>
+        <errorCode>KERNEL_PANIC</errorCode>
+    </log>
+
+</logs>
+

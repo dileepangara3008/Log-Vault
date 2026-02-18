@@ -1,0 +1,148 @@
+<logs>
+
+    <!-- ================= VALID LOGS (17) ================= -->
+
+    <log>
+        <timestamp>2026-02-17T10:00:00Z</timestamp>
+        <level>INFO</level>
+        <service>auth</service>
+        <message>Service started</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:01:00Z</timestamp>
+        <level>ERROR</level>
+        <service>db</service>
+        <message>Database connection failed</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:02:00Z</timestamp>
+        <level>WARN</level>
+        <service>monitor</service>
+        <message>High memory usage detected</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:03:00Z</timestamp>
+        <level>DEBUG</level>
+        <service>gateway</service>
+        <message>Token validated</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:04:00Z</timestamp>
+        <level>INFO</level>
+        <service>auth</service>
+        <message>User login successful</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:05:00Z</timestamp>
+        <level>INFO</level>
+        <service>auth</service>
+        <message>Password reset requested</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:06:00Z</timestamp>
+        <level>ERROR</level>
+        <service>api</service>
+        <message>Timeout while fetching data</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:07:00Z</timestamp>
+        <level>WARN</level>
+        <service>cache</service>
+        <message>Cache miss detected</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:08:00Z</timestamp>
+        <level>INFO</level>
+        <service>auth</service>
+        <message>User logout successful</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:09:00Z</timestamp>
+        <level>DEBUG</level>
+        <service>gateway</service>
+        <message>Header validation passed</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:10:00Z</timestamp>
+        <level>INFO</level>
+        <service>billing</service>
+        <message>Invoice generated</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:11:00Z</timestamp>
+        <level>ERROR</level>
+        <service>billing</service>
+        <message>Payment gateway unreachable</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:12:00Z</timestamp>
+        <level>WARN</level>
+        <service>monitor</service>
+        <message>Disk usage exceeded threshold</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:13:00Z</timestamp>
+        <level>INFO</level>
+        <service>auth</service>
+        <message>User profile updated</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:14:00Z</timestamp>
+        <level>DEBUG</level>
+        <service>api</service>
+        <message>Request payload validated</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:15:00Z</timestamp>
+        <level>INFO</level>
+        <service>reporting</service>
+        <message>Report generated successfully</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:16:00Z</timestamp>
+        <level>WARN</level>
+        <service>monitor</service>
+        <message>CPU spike detected</message>
+    </log>
+
+
+    <!-- ================= INVALID LOGS (3) ================= -->
+
+    <log>
+        <timestamp>invalid-date</timestamp>
+        <level>INFO</level>
+        <service>auth</service>
+        <message>Invalid timestamp</message>
+    </log>
+
+    <log>
+        <level>ERROR</level>
+        <service>db</service>
+        <message>Missing timestamp</message>
+    </log>
+
+    <log>
+        <timestamp>2026-02-17T10:20:00Z</timestamp>
+        <level>UNKNOWN</level>
+        <service>auth</service>
+        <message>Unknown severity</message>
+    </log>
+
+</logs>
+

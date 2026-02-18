@@ -1,0 +1,251 @@
+-- USERS
+CREATE TABLE public.users (
+    user_id        BIGSERIAL PRIMARY KEY,
+    first_name     TEXT NOT NULL,
+    last_name      TEXT,
+    phone_no       TEXT NOT NULL,
+    email          VARCHAR(255) UNIQUE NOT NULL,
+    username       VARCHAR(100) UNIQUE,
+    password_hash  TEXT NOT NULL,
+    gender         TEXT NOT NULL,
+    is_active      BOOLEAN DEFAULT TRUE,
+    is_deleted     BOOLEAN DEFAULT FALSE,
+    created_at     TIMESTAMPTZ DEFAULT now(),
+    updated_at     TIMESTAMPTZ DEFAULT now()
+);
+
+-- USER CREDENTIALS
+CREATE TABLE public.user_credentials (
+    credential_id     BIGSERIAL PRIMARY KEY,
+    user_id           BIGINT UNIQUE REFERENCES public.users(user_id) ON DELETE CASCADE,
+    failed_attempts   INTEGER DEFAULT 0,
+    last_failed_at    TIMESTAMPTZ,
+    is_locked         BOOLEAN DEFAULT FALSE,
+    locked_until      TIMESTAMPTZ,
+    password_set_at   TIMESTAMPTZ DEFAULT now(),
+    created_at        TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE public.roles (
+    role_id     SMALLSERIAL PRIMARY KEY,
+    role_name   VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT
+);
+
+INSERT INTO public.roles (role_name, description) VALUES
+('ADMIN', 'Full system access'),
+('USER', 'Standard user');
+
+CREATE TABLE public.permissions (
+    permission_id   SMALLSERIAL PRIMARY KEY,
+    permission_key  VARCHAR(100) UNIQUE NOT NULL
+);
+
+INSERT INTO public.permissions (permission_key) VALUES
+('UPLOAD_LOG'),
+('VIEW_LOG'),
+('DELETE_LOG'),
+('VIEW_SECURITY_LOG'),
+('MANAGE_USERS'),
+('ARCHIVE_LOG');
+
+CREATE TABLE public.role_permissions (
+    role_id        SMALLINT REFERENCES public.roles(role_id) ON DELETE CASCADE,
+    permission_id  SMALLINT REFERENCES public.permissions(permission_id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
+);
+
+CREATE TABLE public.user_roles (
+    user_id     BIGINT REFERENCES public.users(user_id) ON DELETE CASCADE,
+    role_id     SMALLINT REFERENCES public.roles(role_id) ON DELETE CASCADE,
+    assigned_at TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (user_id, role_id)
+);
+
+CREATE TABLE public.teams (
+    team_id     BIGSERIAL PRIMARY KEY,
+    team_name   VARCHAR(150) UNIQUE NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+INSERT INTO public.teams (team_name) VALUES
+('DEVELOPMENT'),
+('TESTING'),
+('OPERATIONS'),
+('SECURITY'),
+('ADMIN'),
+('PROJECT_MANAGEMENT');
+
+CREATE TABLE public.user_teams (
+    user_id   BIGINT REFERENCES public.users(user_id) ON DELETE CASCADE,
+    team_id   BIGINT REFERENCES public.teams(team_id) ON DELETE CASCADE,
+    joined_at TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (user_id, team_id)
+);
+
+CREATE TABLE public.log_categories (
+    category_id   SMALLSERIAL PRIMARY KEY,
+    category_name VARCHAR(50) UNIQUE NOT NULL
+);
+
+INSERT INTO public.log_categories (category_name) VALUES
+('APPLICATION'),
+('SECURITY'),
+('INFRASTRUCTURE'),
+('AUDIT'),
+('UNCATEGORIZED');
+
+CREATE TABLE public.file_formats (
+    format_id    SMALLSERIAL PRIMARY KEY,
+    format_name  VARCHAR(20) UNIQUE NOT NULL
+);
+
+INSERT INTO public.file_formats (format_name)
+VALUES ('TXT'), ('CSV'), ('JSON'), ('XML');
+
+CREATE TABLE public.log_severities (
+    severity_id    SMALLSERIAL PRIMARY KEY,
+    severity_code  VARCHAR(10) UNIQUE NOT NULL,
+    severity_level INTEGER NOT NULL,
+    description    TEXT
+);
+
+INSERT INTO public.log_severities VALUES
+(DEFAULT,'DEBUG',10,'Debug-level messages'),
+(DEFAULT,'INFO',20,'Informational messages'),
+(DEFAULT,'WARN',30,'Warning conditions'),
+(DEFAULT,'ERROR',40,'Error conditions'),
+(DEFAULT,'FATAL',50,'Critical failures');
+
+CREATE TABLE public.environments (
+    environment_id   SMALLSERIAL PRIMARY KEY,
+    environment_code VARCHAR(20) UNIQUE NOT NULL,
+    description      TEXT
+);
+
+INSERT INTO public.environments VALUES
+(DEFAULT,'DEV','Development environment'),
+(DEFAULT,'QA','Quality assurance'),
+(DEFAULT,'UAT','User acceptance testing'),
+(DEFAULT,'STAGING','Pre-production'),
+(DEFAULT,'PROD','Production');
+
+CREATE TABLE public.raw_files (
+    file_id           BIGSERIAL PRIMARY KEY,
+    team_id           BIGINT REFERENCES public.teams(team_id),
+    uploaded_by       BIGINT REFERENCES public.users(user_id),
+    original_name     VARCHAR(255) NOT NULL,
+    file_size_bytes   BIGINT NOT NULL,
+    format_id         SMALLINT REFERENCES public.file_formats(format_id),
+    category_id       SMALLINT REFERENCES public.log_categories(category_id),
+    environment_id    SMALLINT REFERENCES public.environments(environment_id),
+    is_archived       BOOLEAN DEFAULT FALSE,
+    uploaded_at       TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE raw_files
+ADD COLUMN file_hash VARCHAR(64);
+
+CREATE INDEX idx_raw_files_hash ON raw_files(file_hash);
+
+
+CREATE TABLE public.log_entries (
+    log_id         BIGSERIAL PRIMARY KEY,
+    file_id        BIGINT REFERENCES public.raw_files(file_id) ON DELETE CASCADE,
+    log_timestamp  TIMESTAMPTZ NOT NULL,
+    severity_id    SMALLINT REFERENCES public.log_severities(severity_id),
+    category_id    SMALLINT REFERENCES public.log_categories(category_id),
+    message_line   TEXT NOT NULL,
+    created_at     TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE public.audit_trail (
+    action_id    BIGSERIAL PRIMARY KEY,
+    user_id      BIGINT REFERENCES public.users(user_id),
+    action_type  VARCHAR(50) NOT NULL,
+    action_time  TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE public.archives (
+    archive_id     BIGSERIAL PRIMARY KEY,
+    file_id        BIGINT REFERENCES public.raw_files(file_id),
+    archived_on    TIMESTAMPTZ DEFAULT now(),
+    total_records  INTEGER
+);
+
+CREATE TABLE file_parse_stats (
+    stat_id SERIAL PRIMARY KEY,
+    file_id INTEGER UNIQUE NOT NULL,
+    total_logs INTEGER NOT NULL DEFAULT 0,
+    parsed_logs INTEGER NOT NULL DEFAULT 0,
+    skipped_logs INTEGER NOT NULL DEFAULT 0,
+    parsed_percentage INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (file_id) REFERENCES raw_files(file_id) ON DELETE CASCADE
+);
+
+
+CREATE OR REPLACE FUNCTION public.archive_old_files()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.archives (file_id, archived_on, total_records)
+    SELECT rf.file_id, now(), COUNT(le.log_id)
+    FROM public.raw_files rf
+    LEFT JOIN public.log_entries le ON le.file_id = rf.file_id
+    WHERE rf.uploaded_at < now() - interval '90 days'
+      AND rf.is_archived = false
+    GROUP BY rf.file_id;
+
+    UPDATE public.raw_files
+    SET is_archived = true
+    WHERE uploaded_at < now() - interval '90 days'
+      AND is_archived = false;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_archive_files
+AFTER INSERT ON public.raw_files
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.archive_old_files();
+
+-- ADMIN → all permissions
+INSERT INTO public.role_permissions (role_id, permission_id)
+SELECT r.role_id, p.permission_id
+FROM public.roles r, public.permissions p
+WHERE r.role_name = 'ADMIN'
+ON CONFLICT DO NOTHING;
+
+-- USER → limited permissions
+INSERT INTO public.role_permissions (role_id, permission_id)
+SELECT r.role_id, p.permission_id
+FROM public.roles r
+JOIN public.permissions p
+ON p.permission_key IN ('UPLOAD_LOG','VIEW_LOG')
+WHERE r.role_name = 'USER'
+ON CONFLICT DO NOTHING;
+
+CREATE INDEX idx_log_timestamp ON log_entries(log_timestamp);
+CREATE INDEX idx_raw_team ON raw_files(team_id);
+CREATE INDEX idx_raw_uploaded_by ON raw_files(uploaded_by);
+CREATE INDEX idx_raw_archived ON raw_files(is_archived);
+
+
+select * from users
+
+select * from raw_files
+
+select * from audit_trail
+
+select * from archives
+
+select * from log_entries 
+
+select * from file_parse_stats
+
+select * from role_permissions
+---Count errors by category for givend
+
+
+
