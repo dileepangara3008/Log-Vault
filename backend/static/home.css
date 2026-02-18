@@ -188,20 +188,80 @@
 
 /* Responsive */
 @media (max-width: 950px) {
+
+    /* HERO */
     .hero {
         flex-direction: column;
         text-align: center;
+        padding: 45px 20px;
+        gap: 30px;
+    }
+
+    .hero-text {
+        max-width: 100%;
+    }
+
+    .hero-text h1 {
+        font-size: 32px;
+        line-height: 1.2;
+    }
+
+    .hero-text p {
+        font-size: 15px;
     }
 
     .hero-buttons {
         justify-content: center;
     }
 
-    .navbar {
-        padding: 14px 20px;
+    .hero-card {
+        width: 100%;
+        max-width: 100%;
     }
 
+    /* SECTIONS */
     .section {
-        padding: 40px 20px;
+        padding: 40px 16px;
+    }
+
+    .section h2 {
+        font-size: 24px;
+    }
+
+    .section p {
+        font-size: 14px;
+        padding: 0 5px;
+    }
+
+    /* FEATURES GRID */
+    .features-grid {
+        padding: 20px 0;
+        gap: 14px;
+        grid-template-columns: 1fr;
+    }
+
+    .feature-card {
+        padding: 18px;
+    }
+
+    .feature-card h3 {
+        font-size: 16px;
+    }
+
+    .feature-card p {
+        font-size: 13px;
+    }
+
+    /* ABOUT */
+    .about-box {
+        padding: 22px;
+    }
+
+    .about-box h3 {
+        font-size: 20px;
+    }
+
+    .about-box p {
+        font-size: 13px;
     }
 }

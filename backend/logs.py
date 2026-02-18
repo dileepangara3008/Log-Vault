@@ -98,12 +98,13 @@ def view_logs():
             e.environment_code,
             le.message_line,
             rf.original_name,
-            rf.uploaded_by
+            concat(u.first_name,' ', u.last_name)
         FROM log_entries le
         JOIN log_severities ls ON le.severity_id = ls.severity_id
         JOIN log_categories lc ON le.category_id = lc.category_id
         JOIN raw_files rf ON le.file_id = rf.file_id
         JOIN environments e ON rf.environment_id = e.environment_id
+        JOIN users u on rf.uploaded_by = u.user_id
         WHERE rf.team_id = ANY(%s) AND rf.is_archived=FALSE
     """
     params = [team_ids]

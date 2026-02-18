@@ -128,7 +128,7 @@ def dashboard():
     top_errors = cur.fetchall()
 
     # -------------------------
-    # 4) Most active systems (approx)
+    # 4) Most active Categories 
     # -------------------------
     cur.execute(f"""
         SELECT
