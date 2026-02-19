@@ -173,7 +173,6 @@ Structure:
 
 Every parser returns:
 
-```python
 (parsed_logs, raw_count, skipped_count)
 
 ## 🧩 Log Structure & Validation Rules
