@@ -17,6 +17,9 @@ logs_bp = Blueprint("logs", __name__)
 @logs_bp.route("/logs", methods=["GET"])
 @require_permission("VIEW_LOG")
 def view_logs():
+    """
+    To view all the logs inserted in log entries table and apply certain filters required
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -56,8 +59,6 @@ def view_logs():
 
     if not end_date and max_date:
         end_date = max_date.strftime("%Y-%m-%d")
-
-
 
     # -----------------------
     # Check if ADMIN

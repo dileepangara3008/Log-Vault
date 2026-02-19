@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, abort
+import bcrypt
 from db import get_db_connection
 from queries import (
     GET_ADMIN_NAME,
@@ -16,24 +17,27 @@ from queries import (
     GET_ROLES
 )
 from audit import log_audit
-import bcrypt
 
 admin_bp = Blueprint("admin", __name__)
 
-
 def require_admin():
+    """
+    To ensure that the current user is authenticated and
+    has administrative priviliges.
+    """
     if not session.get("user_id"):
         abort(401)
     if not session.get("is_admin", False):
         abort(403)
 
-
 # =====================================================
 # ADMIN HOME
 # =====================================================
-
 @admin_bp.route("/admin/home")
 def admin_home():
+    """
+    Displays admin dashboard page with his name
+    """
     require_admin()
 
     user_id = session.get("user_id")
@@ -52,13 +56,15 @@ def admin_home():
         name=name[0].upper() if name else "User"
     )
 
-
 # =====================================================
 # LIST USERS
 # =====================================================
 
 @admin_bp.route("/admin/users")
 def list_users():
+    """
+    Retrieve all the users present to the admin
+    """
     require_admin()
 
     conn = get_db_connection()
@@ -72,13 +78,15 @@ def list_users():
 
     return render_template("admin_users.html", users=users)
 
-
 # =====================================================
 # CREATE USER
 # =====================================================
 
 @admin_bp.route("/admin/users/create", methods=["GET", "POST"])
 def create_user():
+    """
+    Admin can create any user 
+    """
     require_admin()
 
     conn = get_db_connection()
@@ -133,9 +141,14 @@ def create_user():
         roles=roles
     )
 
-
+# =====================================================
+# ADMIN_VIEW_USER_PROFILE
+# =====================================================
 @admin_bp.route("/admin/users/<int:user_id>/profile")
 def admin_view_user_profile(user_id):
+    """
+    Admin can view all the details of users present in organzation
+    """
     require_admin()
 
     conn = get_db_connection()
@@ -160,9 +173,14 @@ def admin_view_user_profile(user_id):
 
     return render_template("admin_user_profile.html", user=user)
 
-
+# =====================================================
+# ADMIN_EDIT_USER_PROFILE
+# =====================================================
 @admin_bp.route("/admin/users/<int:user_id>/profile/edit", methods=["GET", "POST"])
 def admin_edit_user_profile(user_id):
+    """
+    Admin can edit the user profile and can change the team of the user
+    """
     require_admin()
 
     conn = get_db_connection()
@@ -224,14 +242,16 @@ def admin_edit_user_profile(user_id):
         roles=roles
     )
 
-
-
 # =====================================================
 # TOGGLE ACTIVE
 # =====================================================
 
 @admin_bp.route("/admin/users/<int:user_id>/toggle_active")
 def toggle_active(user_id):
+    """
+    Toggles a user's active status (activate/deactivate).
+    Admin cannot toggle their own account
+    """
     require_admin()
 
     if user_id == session.get("user_id"):
@@ -269,6 +289,10 @@ def toggle_active(user_id):
 
 @admin_bp.route("/admin/security-logs")
 def view_security_logs():
+    """
+    Displays system security and audit logs.
+    Only accessible to administrators
+    """
     require_admin()
 
     conn = get_db_connection()
@@ -284,11 +308,17 @@ def view_security_logs():
 
 
 # =====================================================
-# DELETE / RESTORE USER
+# DELETE USER
 # =====================================================
 
 @admin_bp.route("/admin/users/<int:user_id>/delete", methods=["POST"])
 def delete_user(user_id):
+    """
+    Soft deletes a user account.
+    The user record remains in the database but is marked as deleted.
+    Admin cannot delete their own account.
+    """
+
     require_admin()
 
     if user_id == session.get("user_id"):
@@ -307,9 +337,14 @@ def delete_user(user_id):
 
     return redirect(url_for("admin.list_users"))
 
-
+# =====================================================
+# RESTORE USER
+# =====================================================
 @admin_bp.route("/admin/users/<int:user_id>/restore", methods=["POST"])
 def restore_user(user_id):
+    """
+    Restores a previously soft-deleted user.
+    """
     require_admin()
 
     if user_id == session.get("user_id"):

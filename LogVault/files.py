@@ -17,13 +17,14 @@ from config import UPLOAD_FOLDER
 
 files_bp = Blueprint("files", __name__)
 
-
 # =====================================================
 # LIST FILES
 # =====================================================
-
 @files_bp.route("/files")
 def list_files():
+    """
+    Listing all the files uploaded 
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -45,14 +46,15 @@ def list_files():
 
     return render_template("files.html", files=files, admin=is_admin)
 
-
 # =====================================================
 # DELETE FILE
 # =====================================================
-
 @files_bp.route("/files/<int:file_id>/delete", methods=["POST"])
 def delete_file(file_id):
-
+    """
+    Admin can delete all the files uploaded by any team
+    User can delete files uploaded by him/her.
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -88,14 +90,14 @@ def delete_file(file_id):
 
     return redirect(url_for("files.list_files"))
 
-
 # =====================================================
 # ARCHIVE FILE
 # =====================================================
-
 @files_bp.route("/files/<int:file_id>/archive", methods=["POST"])
 def archive_file(file_id):
-
+    """
+    Admin can archive the file before the completion of 90 days
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -132,14 +134,14 @@ def archive_file(file_id):
 
     return redirect(url_for("files.list_files"))
 
-
 # =====================================================
 # RESTORE FILE
 # =====================================================
-
 @files_bp.route("/files/<int:file_id>/restore", methods=["POST"])
 def restore_file(file_id):
-
+    """
+    Admin can restore any archived file
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))

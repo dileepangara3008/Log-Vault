@@ -2,7 +2,6 @@ from functools import wraps
 from flask import session, redirect, url_for, abort
 from db import get_db_connection
 
-
 def get_user_permissions(user_id):
     conn = get_db_connection()
     cur = conn.cursor()

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
-import bcrypt
 import re
+import bcrypt
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from db import get_db_connection
 from queries import (
@@ -20,13 +20,19 @@ auth_bp = Blueprint("auth", __name__)
 
 LOCK_LIMIT = 3
 
-
 # =====================================================
 # REGISTER
 # =====================================================
-
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    New user can register in the register page and all
+    the details are stored in db.
+
+    Every field has certain vaildation rules
+
+    User need to pass all the validation rules to register successfully.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -96,14 +102,15 @@ def register():
     conn.close()
     return render_template("register.html", teams=teams, roles=roles)
 
-
 # =====================================================
 # LOGIN
 # =====================================================
-
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-
+    """
+    Redirects to the login page
+    Based on the user it navigates to either admin or user home page.
+    """
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -152,7 +159,7 @@ def login():
         cur.execute(RESET_FAILED_ATTEMPTS, (user_id,))
         conn.commit()
 
-        # Fetch roles + permissions in single query
+        # Fetch roles + permissions 
         cur.execute(GET_USER_ROLES_AND_PERMISSIONS, (user_id,))
         rows = cur.fetchall()
 
@@ -179,59 +186,60 @@ def login():
 
     return render_template("login.html")
 
-
 # =====================================================
 # LOGOUT
 # =====================================================
-
 @auth_bp.route("/logout")
 def logout():
+    """
+    Session will be cleared after logout and 
+    redirected to login page.
+    """
     session.clear()
     return redirect(url_for("auth.login"))
-
 
 # =====================================================
 # VALIDATION HELPERS
 # =====================================================
 
 def validate_password(password: str):
+    """
+    Validation rules to be satisfied to set the password
+    """
     if len(password) < 8:
         return "Password must be at least 8 characters long"
-
     if " " in password:
         return "Password must not contain spaces"
-
     if not re.search(r"[A-Z]", password):
         return "Password must contain at least 1 uppercase letter"
-
     if not re.search(r"[a-z]", password):
         return "Password must contain at least 1 lowercase letter"
-
     if not re.search(r"[0-9]", password):
         return "Password must contain at least 1 digit"
-
     if not re.search(r"[@$!%*?&^#()_\-+=<>/\\{}\[\].,;:]", password):
         return "Password must contain at least 1 special character"
 
     return None
 
-
 def validate_email(email: str):
+    """
+    Validation rules to be satisfied for email
+    """
     pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
     if not re.match(pattern, email):
         return "Invalid email format"
     return None
 
-
 def validate_phone(phone: str):
+    """
+    User should register with valid mobile number
+    """
     phone = phone.strip()
 
     if phone.startswith("+91"):
         phone = phone[3:].strip()
-
     if not phone.isdigit():
         return "Phone number must contain only digits"
-
     if len(phone) != 10:
         return "Phone number must be exactly 10 digits"
 

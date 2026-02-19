@@ -1,5 +1,13 @@
+"""
+Parsing TXT file.
+
+Supports:
+- Space-separated log format
+- Pipe-separated log format
+- Multiline log messages
+"""
+
 import re
-from datetime import datetime
 from parser.time_parser import parse_timestamp
 
 
@@ -13,7 +21,6 @@ SPACE_PATTERN = re.compile(
     re.IGNORECASE
 )
 
-
 PIPE_PATTERN = re.compile(
     r"^\[?(?P<date>\d{4}-\d{2}-\d{2})[T\s]+"
     r"(?P<time>\d{2}:\d{2}:\d{2}(?:[.,]\d{3})?)(?:Z)?\]?\s*\|\s*"
@@ -23,15 +30,18 @@ PIPE_PATTERN = re.compile(
 )
 
 
-
-# def parse_timestamp(date, time):
-#     fmt = "%Y-%m-%d %H:%M:%S,%f" if "," in time else "%Y-%m-%d %H:%M:%S"
-#     return datetime.strptime(f"{date} {time}", fmt)
-
 def parse_text(file_stream):
+    """
+    Parses a TXT log file stream.
+
+    Returns:
+        tuple:
+            logs (list),
+            raw_count (int),
+            skipped_count (int)
+    """
     logs = []
     current_log = None
-
     raw_count = 0
     skipped_count = 0
 
@@ -47,31 +57,29 @@ def parse_text(file_stream):
         match = SPACE_PATTERN.match(line) or PIPE_PATTERN.match(line)
 
         if match:
-            # new log entry detected
             raw_count += 1
 
-            # save previous log
+            # Save previous log before starting a new one
             if current_log:
                 logs.append(current_log)
 
-            try:
-                timestamp = parse_timestamp(
-                    f"{match.group('date')} {match.group('time')}"
-                    )
+            timestamp = parse_timestamp(
+                f"{match.group('date')} {match.group('time')}"
+            )
 
-
-                current_log = {
-                    "timestamp": timestamp,
-                    "severity": match.group("severity").upper(),
-                    "message": match.group("message")
-                }
-
-            except Exception:
+            if not timestamp:
                 skipped_count += 1
                 current_log = None
+                continue
+
+            current_log = {
+                "timestamp": timestamp,
+                "severity": match.group("severity").upper(),
+                "message": match.group("message"),
+            }
 
         else:
-            # multiline continuation
+            # Multiline continuation
             if current_log:
                 current_log["message"] += "\n" + line
 

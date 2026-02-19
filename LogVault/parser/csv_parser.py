@@ -1,15 +1,18 @@
+"""
+CSV Parser
+"""
 import csv
 import io
-from datetime import datetime
 from parser.time_parser import parse_timestamp
-
 
 TIMESTAMP_COLS = ["timestamp", "time", "datetime"]
 SEVERITY_COLS  = ["severity", "level"]
 MESSAGE_COLS   = ["message", "line", "content", "note"]
 
-
 def get_value(row, keys, default=None):
+    """
+    Getting value for key
+    """
     for k in keys:
         if k in row and row[k]:
             return row[k]
@@ -17,6 +20,9 @@ def get_value(row, keys, default=None):
 
 
 def parse_csv(file_stream):
+    """
+    Parsing CSV file
+    """
     logs = []
     raw_count = 0
     skipped_count = 0

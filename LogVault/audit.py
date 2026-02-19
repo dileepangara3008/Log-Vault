@@ -1,7 +1,10 @@
-from db import get_db_connection
 from flask import session
+from db import get_db_connection
 
-def log_audit(action_type, entity_type=None, entity_id=None, details=None):
+def log_audit(action_type):
+    """
+    To store all actions being done in the audit table
+    """
     user_id = session.get("user_id")
 
     conn = get_db_connection()

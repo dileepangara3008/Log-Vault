@@ -1,25 +1,33 @@
+"""
+JSON Parser
+"""
 import json
 import io
-from datetime import datetime
 from parser.time_parser import parse_timestamp
 
 def normalize_key(key):
+    """
+    Normalizing the keys
+    """
     return "".join(c.lower() for c in key if c.isalnum())
-
 
 TIMESTAMP_KEYS = {"timestamp", "time", "datetime", "logtime"}
 SEVERITY_KEYS  = {"severity", "level", "loglevel"}
 MESSAGE_KEYS   = {"message", "msg", "line", "content", "note"}
 
-
 def get_normalized(entry, key_set, default=None):
+    """
+    Normalization
+    """
     for k, v in entry.items():
         if normalize_key(k) in key_set and v:
             return v
     return default
 
-
 def parse_json(file_stream):
+    """
+    Paring JSON function
+    """
     logs = []
     raw_count = 0
     skipped_count = 0

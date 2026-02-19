@@ -1,10 +1,9 @@
-from flask import Flask, redirect, url_for, render_template
+from flask import Flask,render_template
 from auth import auth_bp
 from dashboard import dashboard_bp
 from config import SECRET_KEY
 from upload import upload_bp
 from logs import logs_bp
-
 from admin import admin_bp
 from user_home import user_home_bp
 from files import files_bp
@@ -24,9 +23,11 @@ app.register_blueprint(files_bp)
 app.register_blueprint(profile_bp)
 
 
-
 @app.route("/")
 def home():
+    """
+    Intially this website navigates to home page 
+    """
     return render_template("home.html")
 
 if __name__ == "__main__":

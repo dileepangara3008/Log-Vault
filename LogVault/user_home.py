@@ -2,13 +2,14 @@ from flask import Blueprint, render_template, session, redirect, url_for
 from db import get_db_connection
 
 user_home_bp = Blueprint("user_home", __name__)
-
 @user_home_bp.route("/home")
 def home():
+    """
+    Redirects to user home page with their name
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
-
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -17,7 +18,6 @@ def home():
         (user_id,)
     )
     name = cur.fetchone()
-
     cur.close()
     conn.close()
 

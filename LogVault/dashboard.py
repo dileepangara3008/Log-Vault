@@ -5,16 +5,21 @@ from queries import (
     GET_ALL_TEAMS
 
 )
-
 dashboard_bp = Blueprint("dashboard", __name__)
 
 def is_admin_user(cur, user_id):
+    """
+    Check whether user is admin or not
+    """
     cur.execute(CHECK_ADMIN, (user_id,))
     return cur.fetchone() is not None
 
 
 @dashboard_bp.route("/dashboard", methods=["GET"])
 def dashboard():
+    """
+    All the analytics related to logs and users
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -160,9 +165,7 @@ def dashboard():
         file_where_sql += " AND rf.uploaded_by = %s"
         file_params.append(user_id)
 
-    # -------------------------
-    # File + Log Summary Cards
-    # -------------------------
+   #total_files uploaded
     cur.execute(f"""
         SELECT COUNT(*)
         FROM raw_files rf
@@ -170,7 +173,7 @@ def dashboard():
         """, file_params)
     total_files = cur.fetchone()[0]
 
-
+    #Total active files
     cur.execute(f"""
         SELECT COUNT(*)
         FROM raw_files rf
@@ -179,7 +182,7 @@ def dashboard():
         """, file_params)
     active_files = cur.fetchone()[0]
 
-
+    #Total archived files
     cur.execute(f"""
         SELECT COUNT(*)
         FROM raw_files rf
@@ -188,7 +191,7 @@ def dashboard():
         """, file_params)
     archived_files = cur.fetchone()[0]
 
-
+    #Total logs parsed successfully
     cur.execute(f"""
         SELECT COUNT(*)
         FROM log_entries le
@@ -197,7 +200,7 @@ def dashboard():
         """, params)
     total_logs = cur.fetchone()[0]
 
-
+    #Average number of logs per each file
     cur.execute(f"""
         SELECT 
             COALESCE(
@@ -211,6 +214,7 @@ def dashboard():
         """, file_params)
     avg_logs_per_file = cur.fetchone()[0]
 
+    #Top users based on the number of files uploaded
     cur.execute(f"""
         SELECT
             CONCAT(u.first_name, ' ', u.last_name) AS name,
@@ -229,7 +233,7 @@ def dashboard():
 
     top_users = cur.fetchall()
 
-
+    #Latest file upload time
     cur.execute(f"""
         SELECT MAX(to_char(rf.uploaded_at,'YYYY-MM-DD HH24:MI:SS'))
         FROM raw_files rf
@@ -239,7 +243,8 @@ def dashboard():
 
     labels = []
     values = []
-
+    
+    #Fetching total files uploaded by each team
     if show_team_chart:
         cur.execute("""
             SELECT 
@@ -258,6 +263,7 @@ def dashboard():
     labels = [row[0] for row in rows]
     values = [row[1] for row in rows]
 
+    #Fetching total number of files uploaded for each day
     cur.execute(f"""
         SELECT 
             DATE(rf.uploaded_at) AS day,

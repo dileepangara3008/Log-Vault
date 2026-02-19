@@ -4,13 +4,14 @@ from audit import log_audit
 
 profile_bp = Blueprint("profile", __name__)
 
-
 # =====================================================
 # VIEW PROFILE
 # =====================================================
-
 @profile_bp.route("/profile")
 def view_profile():
+    """
+    Any logged in user can view profile
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -53,13 +54,14 @@ def view_profile():
         user=user
     )
 
-
 # =====================================================
 # EDIT PROFILE
 # =====================================================
-
 @profile_bp.route("/profile/edit", methods=["GET", "POST"])
 def edit_profile():
+    """
+    Any logged in user can edit their profiles
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))

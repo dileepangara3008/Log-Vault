@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, abort, flash
 from werkzeug.utils import secure_filename
+import hashlib
+from io import BytesIO
 from db import get_db_connection
 from queries import (
     CHECK_ADMIN,
-    GET_ENVIRONMENTS,
     GET_TEAM_ID,
     GET_EXISTING_HASHES,
     INSERT_RAW_FILE,
@@ -12,8 +13,6 @@ from queries import (
 from audit import log_audit
 from permissions import require_permission
 from parser.parser_runner import run_parser
-import hashlib
-from io import BytesIO
 
 upload_bp = Blueprint("upload", __name__)
 
@@ -25,13 +24,20 @@ ALLOWED_EXTENSIONS = {
 }
 
 def allowed_file(filename):
+    """
+    To check whether the file is in allowed extensions
+    """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+#===================================
+#======FILE UPLOAD
+#=================================
 @upload_bp.route("/upload", methods=["GET", "POST"])
 @require_permission("UPLOAD_LOG")
 def upload_file():
-
+    """
+    File uploading
+    """
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login"))
@@ -48,12 +54,10 @@ def upload_file():
     environments = cur.fetchall()
 
     if request.method == "POST":
-
         parsed_files = []
         duplicate_files = []
         failed_files = []
         unsupported = []
-
         overall_total = 0
         overall_inserted = 0
 
@@ -116,7 +120,6 @@ def upload_file():
 
                 file_id = cur.fetchone()[0]
 
-                # Commit before parser
                 conn.commit()
 
                 # Run parser
