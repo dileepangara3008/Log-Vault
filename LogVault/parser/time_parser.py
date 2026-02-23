@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-
 def parse_timestamp(value):
     """
     Unified timestamp parser for all log formats.
@@ -25,11 +24,9 @@ def parse_timestamp(value):
         try:
             ts = int(value)
 
-            # milliseconds
             if ts > 10**12:
                 return datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
 
-            # seconds
             return datetime.fromtimestamp(ts, tz=timezone.utc)
 
         except (ValueError, OSError, OverflowError):
@@ -45,13 +42,21 @@ def parse_timestamp(value):
 
     for fmt in formats:
         try:
-            return datetime.strptime(value, fmt)
+            dt = datetime.strptime(value, fmt)
+            return dt.replace(tzinfo=timezone.utc)
         except ValueError:
             continue
 
     # ---- ISO 8601 fallback ----
     try:
         iso_value = value.replace("Z", "+00:00")
-        return datetime.fromisoformat(iso_value)
+        dt = datetime.fromisoformat(iso_value)
+
+        # ensure UTC if timezone provided
+        if dt.tzinfo:
+            return dt.astimezone(timezone.utc)
+
+        return dt.replace(tzinfo=timezone.utc)
+
     except ValueError:
         return None

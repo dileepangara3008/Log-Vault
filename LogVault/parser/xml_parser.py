@@ -1,15 +1,20 @@
 """
-XML log parser.
+XML Log Parser
 
 Parses XML files structured as:
+
 <logs>
     <log>
         ...
     </log>
 </logs>
 
-Extracts timestamp, severity, and message fields.
-Appends extra fields into the message for context.
+Extracts:
+- timestamp (mandatory)
+- severity (optional, defaults to INFO)
+- message (mandatory if timestamp valid)
+
+Extra fields are appended to message.
 """
 
 from datetime import datetime
@@ -20,16 +25,15 @@ TIMESTAMP_KEYS = {"timestamp", "time", "datetime", "logtime"}
 SEVERITY_KEYS = {"severity", "level", "loglevel"}
 MESSAGE_KEYS = {"message", "msg", "line", "content", "note"}
 
-ALL_CORE_KEYS = TIMESTAMP_KEYS | SEVERITY_KEYS | MESSAGE_KEYS
-
 
 def parse_timestamp(value):
     """
-    Parses ISO formatted timestamp.
+    Parses ISO timestamp and supports trailing 'Z'.
     Returns None if invalid.
     """
     try:
-        return datetime.fromisoformat(value.strip())
+        value = value.strip().replace("Z", "+00:00")
+        return datetime.fromisoformat(value)
     except ValueError:
         return None
 
@@ -55,6 +59,7 @@ def parse_xml(file_stream):
     raw_count = 0
     skipped_count = 0
 
+    # ---- Read file ----
     try:
         raw = file_stream.read()
     except (OSError, AttributeError):
@@ -63,59 +68,57 @@ def parse_xml(file_stream):
     if not raw:
         return logs, raw_count, skipped_count
 
+    # ---- Parse XML ----
     try:
-        root = ET.fromstring(raw)
+        root = ET.fromstring(raw.decode("utf-8", errors="ignore"))
     except ET.ParseError:
         return logs, raw_count, skipped_count
 
+    # ---- Process each <log> element ----
     for log_elem in root.findall(".//log"):
         raw_count += 1
 
-        try:
-            timestamp = None
-            severity = "INFO"
-            message = ""
+        timestamp = None
+        severity = "INFO"
+        message = ""
 
-            # ---- First pass: extract core fields ----
-            for child in log_elem:
-                key = normalize_key(child.tag)
-                value = (child.text or "").strip()
+        # ---- First pass: core fields ----
+        for child in log_elem:
+            key = normalize_key(child.tag)
+            value = (child.text or "").strip()
 
-                if not value:
-                    continue
-
-                if key in TIMESTAMP_KEYS and not timestamp:
-                    timestamp = parse_timestamp(value)
-
-                elif key in SEVERITY_KEYS:
-                    severity = value.upper()
-
-                elif key in MESSAGE_KEYS and not message:
-                    message = value
-
-            if not timestamp:
-                skipped_count += 1
+            if not value:
                 continue
 
-            # ---- Second pass: append extra fields ----
-            for child in log_elem:
-                key = normalize_key(child.tag)
-                value = (child.text or "").strip()
+            if key in TIMESTAMP_KEYS and not timestamp:
+                timestamp = parse_timestamp(value)
 
-                if not value:
-                    continue
+            elif key in SEVERITY_KEYS:
+                severity = value.upper()
 
-                if key not in ALL_CORE_KEYS:
-                    message += f" | {child.tag}={value}"
+            elif key in MESSAGE_KEYS and not message:
+                message = value
 
-            logs.append({
-                "timestamp": timestamp,
-                "severity": severity,
-                "message": message
-            })
-
-        except (ValueError, TypeError):
+        # ---- Validate timestamp ----
+        if not timestamp:
             skipped_count += 1
             continue
+
+        # ---- Second pass: append extra fields ----
+        for child in log_elem:
+            key = normalize_key(child.tag)
+            value = (child.text or "").strip()
+
+            if not value:
+                continue
+
+            if key not in (TIMESTAMP_KEYS | SEVERITY_KEYS | MESSAGE_KEYS):
+                message += f" | {child.tag}={value}"
+
+        logs.append({
+            "timestamp": timestamp,
+            "severity": severity,
+            "message": message
+        })
 
     return logs, raw_count, skipped_count
